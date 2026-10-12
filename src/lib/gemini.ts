@@ -9,7 +9,7 @@ import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { z } from "zod";
 
 export const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
-const FALLBACKS = (process.env.GEMINI_FALLBACK_MODELS ?? "gemini-3.7-flash,gemini-3.6-flash")
+const FALLBACKS = (process.env.GEMINI_FALLBACK_MODELS ?? "gemini-3.7-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-3-flash-preview")
   .split(",")
   .map((m) => m.trim())
   .filter((m) => m && m !== GEMINI_MODEL);
@@ -124,6 +124,8 @@ export async function generateJson<T extends z.ZodType>(opts: {
         if (opts.usage) opts.usage.calls++;
         const q = quotaInfo(e);
         if (q.is429) model.benchedUntil = q.daily ? Infinity : Date.now() + q.retryMs;
+        // 503 "high demand": rest this model briefly so the next attempt rotates to another one.
+        else if (/\b503\b|UNAVAILABLE|overloaded/i.test(String((e as Error)?.message))) model.benchedUntil = Date.now() + 20_000;
         if (attempt >= 5 || !isRetryable(e)) throw e;
         if (!q.is429) await sleep(1500 * 2 ** Math.min(attempt, 3) + Math.random() * 500);
       }

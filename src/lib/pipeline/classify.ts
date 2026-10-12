@@ -50,10 +50,11 @@ Hard rules:
 - confidence: 0–1 that this is a real, company-specific trigger (0.9+ only for explicit, unambiguous events).
 - event_date: YYYY-MM-DD if stated or implied by the item's published date, else "".
 - people_mentioned: full names explicitly in the text, else [].
+- Quarterly results / earnings coverage that restates the same store, site or hiring additions is ONE event: give those items the same event_key.
 - event_key: short kebab-case id of the underlying real-world event, e.g. "gateway-agra-232-keys" or "q2-15-new-stores". Items that describe the SAME event (same hire, same store batch, same deal) MUST share the same key; different hotels/hires/deals MUST get different keys. Reuse a key from KNOWN EVENTS if the item is about that event. "" if not a trigger.
 
 Signal types:
-- leadership_hire: new CHRO / CPO / Head of HR / COO / VP or Head of Operations (also CEO if it signals an operating overhaul).
+- leadership_hire: new CHRO / CPO / Head of HR / COO / VP or Head of Operations (also CEO if it signals an operating overhaul). A DEPARTURE/resignation of such a leader is also leadership_hire (a vacancy → a new buyer soon) but confidence must be ≤ 0.6 and the chip must say "exit" (e.g. "COO exit").
 - headcount_expansion: hiring drives, new stores / dark stores / hubs / hotels / hospitals / clinics / plants / warehouses, capacity growth that adds frontline staff.
 - funding_round: equity raise, IPO filing, large debt raise for expansion.
 - workforce_digitalisation: HRMS/WFM/automation programmes, digital attendance, workforce-tech partnerships.
@@ -75,6 +76,10 @@ function verbatimEvidence(evidence: string, item: RawItem) {
   if (ev && src.includes(norm(ev))) return wordsCap(ev, 25);
   return wordsCap(item.title, 25);
 }
+
+/** Departures are weaker than confirmed hires: a vacancy, not yet a buyer. */
+const DEPARTURE = /\b(resign\w*|steps? down|stepped down|quits?|exit\w*|depart\w*|leaves?|moves? on)\b/i;
+export const DEPARTURE_CONFIDENCE_CAP = 0.6;
 
 export async function classifyAccount(
   a: AccountRow,
@@ -128,7 +133,13 @@ ${list}`;
       summary: wordsCap(c.summary, 22),
       relevance_reason: wordsCap(c.relevance_reason, 22),
       evidence_snippet: verbatimEvidence(c.evidence_snippet, item),
-      confidence: Math.max(0, Math.min(1, c.confidence)),
+      confidence: Math.max(
+        0,
+        Math.min(
+          trigger && c.signal_type === "leadership_hire" && DEPARTURE.test(`${c.chip} ${c.summary}`) ? DEPARTURE_CONFIDENCE_CAP : 1,
+          c.confidence,
+        ),
+      ),
       event_key: trigger ? c.event_key.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 60) : "",
       item,
     });

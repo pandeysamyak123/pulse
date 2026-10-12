@@ -1,6 +1,8 @@
 // npm run test:integrity — proves automation cannot overwrite Arjun's data.
 //  1. Hash all ARJUN data.
-//  2. Run system writes (Phase 1: the system write path directly; later: the full pipeline).
+//  2. Run the FULL pipeline (fetch → classify → score → briefs/drafts/digests),
+//     plus a hostile apply_signal_update payload that tries to set ARJUN columns.
+//     `--quick` skips the live pipeline (no network / Gemini).
 //  3. Re-hash; assert identical.
 //  4. Assert that forbidden writes throw: system-actor edits/inserts (integrity_probe)
 //     and raw service-role writes that bypass the RPCs.
@@ -8,6 +10,8 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { supabaseAdmin, must } from "../src/lib/supabase";
+import { runScan } from "../src/lib/pipeline/scan";
+import { enrichAccount } from "../src/lib/pipeline/enrich";
 
 const db = supabaseAdmin();
 let failures = 0;
@@ -51,8 +55,14 @@ async function main() {
   const before = must(await db.rpc("arjun_data_hash"), "hash before") as string;
   console.log(`  hash before: ${before}`);
 
+  if (!process.argv.includes("--quick")) {
+    console.log("  running the full pipeline (live fetch + Gemini)…");
+    const scan = await runScan("integrity-test", { enrich: enrichAccount });
+    console.log(`  pipeline: ${scan.results.length} accounts, ${scan.usage.calls} Gemini calls, run integrity_ok=${scan.integrity.integrity_ok}`);
+    ok(scan.integrity.integrity_ok, "scan_runs records identical before/after hashes");
+  }
   const n = await systemWrites();
-  console.log(`  ran system write path on ${n} accounts`);
+  console.log(`  sent a hostile payload through apply_signal_update on ${n} accounts`);
 
   const after = must(await db.rpc("arjun_data_hash"), "hash after") as string;
   console.log(`  hash after:  ${after}\n`);

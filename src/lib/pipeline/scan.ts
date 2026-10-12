@@ -297,11 +297,18 @@ export async function scanAccounts(runId: string, accountIds: string[] | "all", 
         gemini_calls: (run.gemini_calls as number) + usage.calls,
         tokens: (run.tokens as number) + usage.tokens,
         errors: [...(run.errors as unknown[]), ...errors],
+        summary: mergeModels(run.summary as unknown as { models?: Record<string, number> }, usage.models ?? {}),
       })
       .eq("id", runId),
     "run counters",
   );
   return { results: ok, errors, usage };
+}
+
+function mergeModels(summary: { models?: Record<string, number> } | null, models: Record<string, number>) {
+  const merged = { ...(summary?.models ?? {}) };
+  for (const [m, n] of Object.entries(models)) merged[m] = (merged[m] ?? 0) + n;
+  return { ...(summary ?? {}), models: merged };
 }
 
 export async function runScan(trigger: string, opts: ScanOptions = {}) {
