@@ -218,15 +218,13 @@ function YoursPanel(p: WorkspaceProps) {
               {a.next_step_due && <span className={cn("num rounded-md px-1.5 py-0.5 text-[11px]", overdue ? "bg-[color-mix(in_oklab,var(--bad)_15%,transparent)] text-bad" : "bg-surface-2 text-muted")}>{overdue ? "due " : ""}{fmtDate(a.next_step_due)}</span>}
             </dd>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <dt className="label mb-0.5">Last contact</dt>
-              <dd className="num text-muted">{fmtDate(a.last_contact_date)}</dd>
-            </div>
-            <div>
-              <dt className="label mb-0.5">Paused until</dt>
-              <dd className="num text-muted">{fmtDate(a.do_not_contact_until)}</dd>
-            </div>
+          <div className="inline-block w-1/2 align-top">
+            <dt className="label mb-0.5">Last contact</dt>
+            <dd className="num text-muted">{fmtDate(a.last_contact_date)}</dd>
+          </div>
+          <div className="!mt-0 inline-block w-1/2 align-top">
+            <dt className="label mb-0.5">Paused until</dt>
+            <dd className="num text-muted">{fmtDate(a.do_not_contact_until)}</dd>
           </div>
           <div>
             <dt className="label mb-0.5">Search terms</dt>

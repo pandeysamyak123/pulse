@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -14,7 +14,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { ago, cn, initials, SIGNAL_LABEL, STAGE_LABEL, TIER_META } from "@/lib/format";
+import { ago, cn, SIGNAL_LABEL, STAGE_LABEL, TIER_META } from "@/lib/format";
 import type { Tier } from "@/lib/types";
 
 /* ───────── Tooltip (CSS-only, keyboard-accessible via focus-within) ───────── */
@@ -169,31 +169,23 @@ export function TriggerChip({
   );
 }
 
-/* ───────── Company logo (favicon service → initials fallback) ───────── */
+/* ───────── Company logo (served by /api/logo: real favicon or an initials badge, never a 404) ───────── */
 export function Logo({ name, domain, size = 36 }: { name: string; domain: string | null; size?: number }) {
-  const [failed, setFailed] = useState(!domain);
   return (
     <span
-      className="grid shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-surface-2 font-semibold text-muted"
-      style={{ width: size, height: size, fontSize: size * 0.34 }}
+      className="grid shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-surface-2"
+      style={{ width: size, height: size }}
     >
-      {failed ? (
-        initials(name)
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
-          alt=""
-          width={size * 0.62}
-          height={size * 0.62}
-          className="rounded-md"
-          onError={() => setFailed(true)}
-          onLoad={(e) => {
-            // Google returns a 16px generic globe when it has no icon: treat as missing.
-            if ((e.target as HTMLImageElement).naturalWidth <= 16) setFailed(true);
-          }}
-        />
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/api/logo?domain=${encodeURIComponent(domain ?? "")}&name=${encodeURIComponent(name)}`}
+        alt=""
+        width={Math.round(size * 0.62)}
+        height={Math.round(size * 0.62)}
+        loading="lazy"
+        decoding="async"
+        className="rounded-md"
+      />
     </span>
   );
 }
