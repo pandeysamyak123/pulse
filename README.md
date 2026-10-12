@@ -4,6 +4,17 @@
 
 Arjun sells a workforce-management SaaS (fictional "ShiftSense") to Indian mid-market and enterprise companies. Pulse tells him **in five seconds who to contact today and why**: it reads live news about every account, detects workforce triggers, scores warmth with a transparent formula, drafts outreach tied to the trigger, and emails him a Hot List every Monday and Thursday — **without ever overwriting his own notes, history or fields.**
 
+![Today](docs/screenshots/today.png)
+
+<p align="center">
+  <img src="docs/screenshots/account-overview.png" width="49%" alt="Account workspace" />
+  <img src="docs/screenshots/account-outreach.png" width="49%" alt="Outreach composer" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/runs.png" width="49%" alt="Runs, integrity and live attack" />
+  <img src="docs/screenshots/mobile-today.png" width="22%" alt="Mobile" />
+</p>
+
 ---
 
 ## What it does
@@ -37,6 +48,8 @@ $ npm run test:integrity
   ✓ raw service-role update of arjun_notes throws — OWNERSHIP_VIOLATION: actor none …
   … 11/11 passed
 ```
+
+**Prove it live:** the Runs page has a **Run attack** button. It tries 7 forbidden writes against Arjun's data — as the pipeline, with no actor, and as a raw admin UPDATE that skips every RPC — inside a transaction that always rolls back, then shows each one `BLOCKED` and the hash before = after.
 
 RLS is on for every table: the browser's anon key can only `SELECT`; every RPC is revoked from `anon`/`authenticated`.
 
@@ -113,7 +126,15 @@ npm run dev
 | `REQUIRE_PASSCODE`, `APP_PASSCODE` | Optional: set `REQUIRE_PASSCODE=true` to lock write actions behind `APP_PASSCODE` (read-only demo otherwise). Off by default. |
 | `NEXT_PUBLIC_APP_URL` | Deep links in the Hot List |
 
-**Crons** (`vercel.json`, UTC): scan `30 0 * * *` (06:00 IST), Hot List `30 2 * * 1,4` (Mon/Thu 08:00 IST; runs a fresh scan first if the last one is > 6 h old). Cron scans work in batches within a time budget; deferred accounts are logged and picked up next run.
+**Crons** (`vercel.json`, UTC): scan `30 7 * * *` (13:00 IST — just after the Gemini free-tier daily quota resets at 12:30 IST), Hot List `30 2 * * 1,4` (Mon/Thu 08:00 IST; runs a fresh scan first if the last one is > 6 h old). Cron scans work in batches within a time budget; deferred accounts are logged and picked up next run.
+
+## Quality
+
+- **Unit tests** (`npm test`, Vitest) for the deterministic core: decay maths, top-3 cap, stage multipliers, event clustering, first-report ageing, prefilter (word-boundary matching, exclude terms, dedupe, priority), draft gate (the real hallucinations we caught), readiness.
+- **CI** (`.github/workflows/ci.yml`): lint + typecheck + tests on every push.
+- **Accessibility:** Lighthouse 92+ on every page before fixes; tooltip semantics, contrast and label/name issues then fixed. Full keyboard support (⌘K, J/K, D, L, N, 1–5) and `prefers-reduced-motion` respected everywhere.
+- **Guards for the open app:** one scan per 10 min, 4 regenerations per account per hour, 10 sends per hour — all enforced from database state so they hold across serverless instances. Abandoned scans are closed automatically with their integrity hash recorded.
+- **Robust rendering:** entrance animations are pure CSS, so content is visible from the server HTML before JavaScript loads; skeleton loaders, error and 404 pages.
 
 ## Stack
 

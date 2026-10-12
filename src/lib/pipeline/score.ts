@@ -107,11 +107,17 @@ export function scoreAccount(
   prevScore: number | null,
   now = Date.now(),
 ): { score: number; tier: Tier; trend: "rising" | "steady" | "falling"; breakdown: BreakdownEntry[] } {
+  // An event is as old as its FIRST report — later coverage corroborates, it doesn't reset decay.
+  const firstSeen = new Map<string, number>();
+  for (const s of signals) {
+    const k = s.cluster_id ?? s.id;
+    firstSeen.set(k, Math.min(firstSeen.get(k) ?? Infinity, ts(s)));
+  }
   const entries: BreakdownEntry[] = signals
     .filter((s) => s.is_cluster_lead && SIGNAL_CONFIG[s.signal_type])
     .map((s) => {
       const cfg = SIGNAL_CONFIG[s.signal_type];
-      const age = Math.max(0, (now - ts(s)) / DAY);
+      const age = Math.max(0, (now - (firstSeen.get(s.cluster_id ?? s.id) ?? ts(s))) / DAY);
       const decay = Math.pow(0.5, age / cfg.halfLife);
       const conf = Math.min(1, s.confidence + CORROBORATION_BOOST * s.corroborations);
       const mult = STAGE_MULTIPLIERS[stage]?.[s.signal_type] ?? 1;

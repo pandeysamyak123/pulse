@@ -78,6 +78,14 @@ describe("clusterSignals", () => {
     expect(a.cluster_id).not.toBe(b.cluster_id);
   });
 
+  it("ages an event from its first report, not the latest re-coverage", () => {
+    const first = sig({ daysAgo: 2, event_key: "new-hr-head", confidence: 0.9 });
+    const later = sig({ daysAgo: 0, event_key: "new-hr-head", confidence: 0.95 });
+    const all = clusterSignals([first, later]);
+    const { breakdown } = scoreAccount(all, "pilot", null, NOW);
+    expect(breakdown[0].age_days).toBeCloseTo(2, 1);
+  });
+
   it("never merges across the 3-day window", () => {
     const a = sig({ daysAgo: 10, event_key: "x" });
     const b = sig({ daysAgo: 0, event_key: "x" });

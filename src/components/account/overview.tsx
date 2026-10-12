@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { updateManualFields } from "@/app/actions";
 import { ago, cn, fmtDate, SIGNAL_LABEL, STAGE_LABEL, TIER_META } from "@/lib/format";
 import type { Signal } from "@/lib/types";
+import { firstSeenMap } from "@/lib/derive";
 import { Button, OwnerTag, SignalIcon, Tip } from "../ui";
 import { ScoreExplainer } from "../viz";
 import type { WorkspaceProps } from "./workspace";
@@ -15,7 +16,11 @@ export function Overview(p: WorkspaceProps & { goTo: (t: string) => void }) {
   const a = p.account;
   const leads = p.signals.filter((s) => s.is_cluster_lead);
   const order = new Map(a.score_breakdown.map((b, i) => [b.signal_id, i]));
-  const top = [...leads].sort((x, y) => (order.get(x.id) ?? 99) - (order.get(y.id) ?? 99)).slice(0, 4);
+  const first = firstSeenMap(p.signals);
+  const top = [...leads]
+    .sort((x, y) => (order.get(x.id) ?? 99) - (order.get(y.id) ?? 99))
+    .slice(0, 4)
+    .map((s) => ({ ...s, published_at: first.get(s.cluster_id ?? s.id) ?? s.published_at }));
   const rec = p.contacts.find((c) => c.id === a.recommended_contact_id);
 
   return (

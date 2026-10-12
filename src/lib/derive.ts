@@ -19,14 +19,27 @@ export type AccountView = Account & {
   recommendedContact: string | null;
 };
 
+/** When each event (cluster) was first reported — later coverage doesn't make it "new". */
+export function firstSeenMap(signals: Signal[]) {
+  const m = new Map<string, string>();
+  for (const s of signals) {
+    const k = s.cluster_id ?? s.id;
+    const t = s.published_at ?? s.detected_at;
+    const cur = m.get(k);
+    if (!cur || Date.parse(t) < Date.parse(cur)) m.set(k, t);
+  }
+  return m;
+}
+
 /** Top chips follow the score breakdown order (what actually drives the score), then recency. */
 export function chipsFor(a: Account, signals: Signal[], n = 2): Chip[] {
+  const first = firstSeenMap(signals.filter((s) => s.account_id === a.id));
   const mine = signals.filter((s) => s.account_id === a.id && s.is_cluster_lead);
   const order = new Map(a.score_breakdown?.map((b, i) => [b.signal_id, i]) ?? []);
   return mine
     .sort((x, y) => (order.get(x.id) ?? 99) - (order.get(y.id) ?? 99) || Date.parse(y.published_at ?? "") - Date.parse(x.published_at ?? ""))
     .slice(0, n)
-    .map((s) => ({ id: s.id, type: s.signal_type, chip: s.chip, summary: s.summary, at: s.published_at }));
+    .map((s) => ({ id: s.id, type: s.signal_type, chip: s.chip, summary: s.summary, at: first.get(s.cluster_id ?? s.id) ?? s.published_at }));
 }
 
 export function buildViews(
