@@ -1,0 +1,40 @@
+{
+  "about": "Real headlines fetched by Pulse (Google News RSS, Oct 2026), hand-labelled against the written trigger rules — independent of the model's output. 'about' = is this item about the target company; 'trigger' = does it plausibly create a WFM need in 1–8 weeks; 'type' = expected signal type when trigger is true. 'review' marks borderline labels for the human to confirm.",
+  "items": [
+    { "company": "Apollo Hospitals", "title": "Satyajeet Singh Joins Apollo Hospitals As Head Of Human Resources", "about": true, "trigger": true, "type": "leadership_hire" },
+    { "company": "Apollo Hospitals", "title": "Apollo Hospitals expresses interest in establishing hospitals in Sri Lanka", "about": true, "trigger": true, "type": "expansion_geo" },
+    { "company": "Indian Hotels Company", "title": "IHCL Expands Gujarat Presence with New Gateway Kandla Opening", "about": true, "trigger": true, "type": "headcount_expansion" },
+    { "company": "Indian Hotels Company", "title": "IHCL Signs Gateway Hotel Near Bengaluru Airport", "about": true, "trigger": true, "type": "headcount_expansion" },
+    { "company": "Indian Hotels Company", "title": "IHCL signs 232-key Gateway hotel in Agra as Uttar Pradesh portfolio expands to 64 properties", "about": true, "trigger": true, "type": "headcount_expansion" },
+    { "company": "Indian Hotels Company", "title": "IHCL and Oriental Hotels Announce Merger Deal", "about": true, "trigger": true, "type": "m_and_a" },
+    { "company": "Indian Hotels Company", "title": "IHCL's Ginger becomes first brand to operate 100 hotels across India", "about": true, "trigger": true, "type": "headcount_expansion", "review": "milestone rather than a new site — borderline" },
+    { "company": "Avenue Supermarts", "title": "Avenue Supermarts Q2 FY27: DMart opens 15 stores, revenue rises 18% to Rs 19,644 crore", "about": true, "trigger": true, "type": "headcount_expansion" },
+    { "company": "Delhivery", "title": "Delhivery accepts COO Ajith Pai Mangalore's resignation effective Sep 15, 2026", "about": true, "trigger": true, "type": "leadership_hire", "review": "departure: counted as leadership change at ≤0.6 confidence" },
+    { "company": "Zepto", "title": "Zepto Files UDRHP-I With SEBI For IPO", "about": true, "trigger": true, "type": "funding_round" },
+    { "company": "Ather Energy", "title": "Ather Energy Crosses 8 Lakh Cumulative Sales as Rizta Drives Rapid Expansion", "about": true, "trigger": false, "type": null, "review": "sales milestone, no site/headcount event — labelled NOT a trigger" },
+
+    { "company": "Delhivery", "title": "Hero MotoCorp, Delhivery shares set for a rebound: Market expert", "about": true, "trigger": false, "type": null },
+    { "company": "Delhivery", "title": "Delhivery shareholders approve Sahil Barua re-appointment as MD and CEO", "about": true, "trigger": false, "type": null },
+    { "company": "Delhivery", "title": "Delhivery EBITDA rises 103% to ₹764 crore in FY26", "about": true, "trigger": false, "type": null },
+    { "company": "Delhivery", "title": "Motilal Oswal sets ₹510 target, Delhivery posts 55% volume jump", "about": true, "trigger": false, "type": null },
+    { "company": "Indian Hotels Company", "title": "IHCL’s Qmin Partners with M2M Ferries", "about": true, "trigger": false, "type": null },
+    { "company": "Apollo Hospitals", "title": "Upasana Kamineni Konidela Takes Charge as Director - Projects at Apollo Hospitals", "about": true, "trigger": false, "type": null },
+    { "company": "Apollo Hospitals", "title": "Apollo Hospitals BG Road Introduces uMI Panvivo Digital PET/CT System to Strengthen Molecular Imaging", "about": true, "trigger": false, "type": null },
+    { "company": "Max Healthcare", "title": "Max Healthcare MAXHEALTH: CARE Upgrades Subsidiary Credit Rating", "about": true, "trigger": false, "type": null },
+    { "company": "Max Healthcare", "title": "Max Healthcare Institute (MAXHEALTH) Share Price rises 2.48% today to Rs 898", "about": true, "trigger": false, "type": null },
+    { "company": "Avenue Supermarts", "title": "D-Mart profit rises 8.5 pc to Rs 743 cr in Q2", "about": true, "trigger": false, "type": null },
+    { "company": "Lenskart", "title": "Lenskart Introduces Shunya Eyewear Collection Inspired by Indian Music", "about": true, "trigger": false, "type": null },
+    { "company": "Lenskart", "title": "Lenskart Shares Slide 5% As Block Deals Drive Heavy Trading", "about": true, "trigger": false, "type": null },
+    { "company": "Ather Energy", "title": "Ather Energy, Google collaborate to give real-time information on 2-wheeler fast charging stations", "about": true, "trigger": false, "type": null },
+    { "company": "Licious", "title": "Licious Launches India’s First Packaged Chicken Jhol Momos", "about": true, "trigger": false, "type": null },
+    { "company": "Shadowfax", "title": "Fund Sells About Rs 115 Crore of Shadowfax Shares Before IPO", "about": true, "trigger": false, "type": null },
+
+    { "company": "Apollo Hospitals", "title": "Apollo Tyres Sells ₹500 Crore Non-Convertible Debentures Via Private Placement", "about": false, "trigger": false, "type": null },
+    { "company": "Apollo Hospitals", "title": "Apollo Tyres (NSEI:APOLLOTYRE) Stock Forecast & Analyst Predictions", "about": false, "trigger": false, "type": null },
+    { "company": "Max Healthcare", "title": "Axis Max Life Insurance Partners with SK Finance to Extend Credit Life Protection to Emerging Markets", "about": false, "trigger": false, "type": null },
+    { "company": "Max Healthcare", "title": "Max Estates enters Ghaziabad with ₹3,000 cr project, expands NCR footprint", "about": false, "trigger": false, "type": null },
+    { "company": "Max Healthcare", "title": "Max Estates Q2 sales bookings jump 13 times to ₹2,100 crore", "about": false, "trigger": false, "type": null },
+    { "company": "Indian Hotels Company", "title": "Sterling Opens New Hotel Near Taj Mahal in Agra", "about": false, "trigger": false, "type": null },
+    { "company": "Shadowfax", "title": "ESDS Software, INDO-MIM, Milky Mist, Shadowfax: 12 recently listed IPOs trading 100% above their issue price", "about": false, "trigger": false, "type": null }
+  ]
+}
