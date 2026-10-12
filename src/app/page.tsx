@@ -8,7 +8,7 @@ const DAY = 86_400_000;
 
 export default async function TodayPage() {
   const data = await getToday();
-  const views = buildViews(data.accounts, data.signals, data.activities, data.history, data.contacts);
+  const views = buildViews(data.accounts, data.signals, data.activities, data.history, data.contacts, data.news);
 
   // KPIs
   const now = Date.now();

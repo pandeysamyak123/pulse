@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AccountsPage() {
   const d = await getToday();
-  const views = buildViews(d.accounts, d.signals, d.activities, d.history, d.contacts);
+  const views = buildViews(d.accounts, d.signals, d.activities, d.history, d.contacts, d.news);
   const stages = Object.keys(STAGE_LABEL);
   return (
     <div className="space-y-4">

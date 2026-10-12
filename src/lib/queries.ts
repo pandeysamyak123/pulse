@@ -6,6 +6,16 @@ import type { Account, Activity, Article, Contact, Digest, Draft, EmailRun, Note
 const DAY = 86_400_000;
 const db = () => supabaseReader();
 
+export type NewsItem = {
+  account_id: string;
+  title: string;
+  ai_one_liner: string | null;
+  published_at: string | null;
+  url: string;
+  source_name: string | null;
+  is_trigger: boolean;
+};
+
 export type HistoryPoint = { account_id: string; score: number; created_at: string };
 
 export async function getShell() {
@@ -21,7 +31,7 @@ export async function getShell() {
 
 export async function getToday() {
   const since14 = new Date(Date.now() - 14 * DAY).toISOString();
-  const [accounts, contacts, signals, history, activities, runs] = await Promise.all([
+  const [accounts, contacts, signals, history, activities, runs, news] = await Promise.all([
     db().from("accounts").select("*").order("warmth_score", { ascending: false }),
     db().from("contacts").select("*"),
     db()
@@ -32,8 +42,15 @@ export async function getToday() {
     db().from("score_history").select("account_id, score, created_at").order("created_at", { ascending: false }).limit(400),
     db().from("activities").select("*").order("occurred_at", { ascending: false }),
     db().from("scan_runs").select("*").order("started_at", { ascending: false }).limit(2),
+    db()
+      .from("articles")
+      .select("account_id, title, ai_one_liner, published_at, url, source_name, is_trigger")
+      .eq("is_about_company", true)
+      .order("published_at", { ascending: false })
+      .limit(400),
   ]);
   return {
+    news: must(news, "news") as NewsItem[],
     accounts: must(accounts, "accounts") as Account[],
     contacts: must(contacts, "contacts") as Contact[],
     signals: must(signals, "signals") as Signal[],

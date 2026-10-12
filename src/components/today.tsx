@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, type Variants } from "framer-motion";
-import { ArrowRight, BellRing, Clock, Flame, Pause, Send, ShieldCheck, Sparkles, X, Zap, Hourglass, CircleCheck, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowRight, BellRing, ExternalLink, Newspaper, Clock, Flame, Pause, Send, ShieldCheck, Sparkles, X, Zap, Hourglass, CircleCheck, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -172,8 +172,10 @@ function ReachCard({ v }: { v: AccountView }) {
       <div className="flex min-h-6 flex-wrap gap-1.5">
         {v.chips.length ? (
           v.chips.map((c) => <TriggerChip key={c.id} type={c.type} chip={c.chip} at={c.at} summary={c.summary} tier={v.warmth_tier} />)
+        ) : v.latest[0] ? (
+          <LatestLine n={v.latest[0]} />
         ) : (
-          <span className="text-xs text-faint">No fresh trigger</span>
+          <span className="text-xs text-faint">Awaiting scan</span>
         )}
       </div>
       {v.why_now && (
@@ -344,8 +346,10 @@ function RankedTable({ views, onQuickLook }: { views: AccountView[]; onQuickLook
                     <span className="flex gap-1.5 overflow-hidden">
                       {v.chips.length ? (
                         v.chips.map((c) => <TriggerChip key={c.id} type={c.type} chip={c.chip} at={c.at} summary={c.summary} tier={v.warmth_tier} />)
+                      ) : v.latest[0] ? (
+                        <LatestLine n={v.latest[0]} />
                       ) : (
-                        <span className="text-xs text-faint">—</span>
+                        <span className="text-xs italic text-faint">Awaiting scan</span>
                       )}
                     </span>
                   </td>
@@ -385,6 +389,19 @@ function FilterPill({ active, onClick, children }: { active: boolean; onClick: (
     >
       {children}
     </button>
+  );
+}
+
+/* ───────── Latest non-trigger news (so quiet accounts still have context) ───────── */
+function LatestLine({ n }: { n: { text: string; title: string; at: string | null; source: string | null } }) {
+  return (
+    <Tip label={<span><b className="font-semibold">No trigger</b> · latest news: {n.title}{n.source ? ` — ${n.source}` : ""}</span>}>
+      <span tabIndex={0} className="flex min-w-0 max-w-[290px] items-center gap-1.5 text-xs text-muted">
+        <Newspaper className="h-3.5 w-3.5 shrink-0 text-faint" />
+        <span className="truncate">{n.text}</span>
+        <span className="num shrink-0 text-faint">{ago(n.at)}</span>
+      </span>
+    </Tip>
   );
 }
 
@@ -439,6 +456,30 @@ function Drawer({ v, onClose }: { v: AccountView | null; onClose: () => void }) 
                 {v.chips.length ? v.chips.map((c) => <TriggerChip key={c.id} type={c.type} chip={c.chip} at={c.at} summary={c.summary} tier={v.warmth_tier} />) : <span className="text-sm text-faint">No fresh trigger</span>}
               </div>
               {v.why_now && <p className="text-sm text-muted">{v.why_now}</p>}
+            </section>
+            <section className="space-y-2">
+              <span className="label flex items-center gap-1.5">
+                <Newspaper className="h-3 w-3" /> Latest news
+              </span>
+              {v.latest.length ? (
+                <ul className="space-y-1.5">
+                  {v.latest.map((n, i) => (
+                    <li key={i}>
+                      <a href={n.url} target="_blank" rel="noreferrer" className="group flex items-start gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-surface-2">
+                        <span className="min-w-0 flex-1">
+                          <span className="block">{n.text}</span>
+                          <span className="block truncate text-xs text-faint">
+                            {n.source} · {ago(n.at)}
+                          </span>
+                        </span>
+                        <ExternalLink className="mt-1 h-3 w-3 shrink-0 text-faint group-hover:text-text" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-faint">Awaiting first scan of this account.</p>
+              )}
             </section>
             {v.company_brief?.length ? (
               <ul className="space-y-1.5 text-sm">

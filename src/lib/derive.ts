@@ -8,7 +8,10 @@ export const tierFor = (s: number): Tier => (s >= 60 ? "hot" : s >= 35 ? "warm" 
 
 export type Chip = { id: string; type: string; chip: string | null; summary: string; at: string | null };
 
+export type LatestNews = { text: string; title: string; at: string | null; url: string; source: string | null };
+
 export type AccountView = Account & {
+  latest: LatestNews[];
   readiness: Readiness;
   chips: Chip[];
   spark: number[];
@@ -32,6 +35,7 @@ export function buildViews(
   activities: Activity[],
   history: { account_id: string; score: number; created_at: string }[],
   contacts: { id: string; full_name: string }[],
+  news: { account_id: string; title: string; ai_one_liner: string | null; published_at: string | null; url: string; source_name: string | null }[] = [],
 ): AccountView[] {
   const today = new Date().toISOString().slice(0, 10);
   return accounts.map((a) => {
@@ -44,6 +48,10 @@ export function buildViews(
       .map((h) => Number(h.score));
     return {
       ...a,
+      latest: news
+        .filter((n) => n.account_id === a.id)
+        .slice(0, 3)
+        .map((n) => ({ text: n.ai_one_liner ?? n.title, title: n.title, at: n.published_at, url: n.url, source: n.source_name })),
       warmth_score: Number(a.warmth_score),
       readiness: r,
       chips: chipsFor(a, signals),
