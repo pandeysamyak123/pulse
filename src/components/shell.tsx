@@ -231,7 +231,6 @@ function TopBar({ lastRun, safeMode, passcodeRequired }: { lastRun: ScanRun | nu
           <button
             onClick={openPalette}
             className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-sm text-faint transition-colors hover:border-line-strong sm:max-w-sm"
-            aria-label="Open command palette"
           >
             <Search className="h-4 w-4 shrink-0" />
             <span className="truncate">Jump to account or action…</span>

@@ -314,7 +314,7 @@ function RankedTable({ views, onQuickLook }: { views: AccountView[]; onQuickLook
     <button
       onClick={() => setSort((s) => ({ key: k, dir: s.key === k ? ((s.dir * -1) as 1 | -1) : -1 }))}
       className="inline-flex items-center gap-0.5 hover:text-text"
-      aria-label={`Sort by ${k}`}
+      title={`Sort by ${k}`}
     >
       {children}
       {sort.key === k && (sort.dir === -1 ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}

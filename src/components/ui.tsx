@@ -39,7 +39,7 @@ export function Tip({
     <span className={cn("group/tip relative inline-flex", className)}>
       {children}
       <span
-        role="tooltip"
+        aria-hidden="true"
         className={cn(
           "pointer-events-none absolute z-50 w-max max-w-64 rounded-lg px-2.5 py-1.5 text-xs leading-snug opacity-0 transition-opacity duration-150",
           "glass text-text shadow-lg group-hover/tip:opacity-100 group-focus-within/tip:opacity-100",
