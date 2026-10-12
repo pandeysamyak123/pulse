@@ -67,7 +67,7 @@ export function TriggersFeed({ signals, accounts }: { signals: Signal[]; account
                 if (!a) return null;
                 return (
                   <li key={s.id} className="card flex gap-3 p-4">
-                    <Link href={`/accounts/${a.id}`} className="shrink-0">
+                    <Link href={`/accounts/${a.id}`} className="shrink-0" aria-label={a.company_name}>
                       <Logo name={a.company_name} domain={a.domain} size={40} />
                     </Link>
                     <div className="min-w-0 flex-1">
@@ -75,7 +75,7 @@ export function TriggersFeed({ signals, accounts }: { signals: Signal[]; account
                         <Link href={`/accounts/${a.id}`} className="font-semibold hover:underline">
                           {a.company_name}
                         </Link>
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: TIER_META[a.warmth_tier].color }} aria-label={a.warmth_tier} />
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: TIER_META[a.warmth_tier].color }} role="img" aria-label={`${a.warmth_tier} tier`} />
                         <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-text">
                           <SignalIcon type={s.signal_type} /> {s.chip || SIGNAL_LABEL[s.signal_type]}
                         </span>
