@@ -311,3 +311,19 @@ tr[aria-selected="true"] { box-shadow: inset 3px 0 0 var(--accent); }
 }
 /* A hovered/focused card rises above its neighbours so popovers (score explainer) aren't covered */
 .card:hover, .card:focus-within { z-index: 3; }
+
+/* ── Entrance animations in pure CSS: content is visible from the server HTML,
+      no JavaScript required (fast first paint, robust if hydration is slow). ── */
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.enter { animation: enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes cell-in { from { opacity: 0; transform: scale(0.4); } }
+.cell-in { animation: cell-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes ring-fill { from { stroke-dashoffset: var(--from); } }
+.ring-fill { animation: ring-fill 1.1s cubic-bezier(0.16, 1, 0.3, 1) both; transition: stroke-dashoffset 0.6s ease; }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.draw { stroke-dasharray: 1; animation: draw 0.9s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .enter, .cell-in, .ring-fill, .draw { animation: none !important; }
+}
+.cell-in.cell-hot { animation: cell-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both, cell-breathe 3.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cell-in.cell-hot { animation: none !important; } }

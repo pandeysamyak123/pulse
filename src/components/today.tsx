@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, type Variants } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import { ArrowRight, BellRing, ExternalLink, Newspaper, Clock, Flame, Pause, Send, ShieldCheck, Sparkles, X, Zap, Hourglass, CircleCheck, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,10 +22,6 @@ type Kpis = {
   integrityOk: boolean | null;
 };
 
-const rise: Variants = {
-  hidden: { opacity: 0, y: 10 },
-  show: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.05, duration: 0.22, ease: "easeOut" as const } }),
-};
 
 export function TodayView({
   views,
@@ -56,11 +52,11 @@ export function TodayView({
         {reachOut.length ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {reachOut.map((id, i) => (
-              <motion.div key={id} custom={i} variants={rise} initial="hidden" animate="show" style={{ perspective: 900 }}>
+              <div key={id} className="enter" style={{ perspective: 900, animationDelay: `${120 + i * 60}ms` }}>
                 <Tilt>
                   <ReachCard v={byId.get(id)!} />
                 </Tilt>
-              </motion.div>
+              </div>
             ))}
           </div>
         ) : (
@@ -95,15 +91,8 @@ function Hero({ views, reachOut, kpis }: { views: AccountView[]; reachOut: strin
   const first = views.find((v) => v.id === reachOut[0]);
   return (
     <header className="relative pt-2">
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="label mb-1">
-        {greet}, Arjun
-      </motion.p>
-      <motion.h1
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="text-2xl font-semibold tracking-tight sm:text-[34px] sm:leading-tight"
-      >
+      <p className="label enter mb-1">{greet}, Arjun</p>
+      <h1 className="enter text-2xl font-semibold tracking-tight sm:text-[34px] sm:leading-tight" style={{ animationDelay: "60ms" }}>
         {kpis.hot > 0 ? (
           <>
             <span className="text-hot">{kpis.hot} hot</span> <span className="text-gradient">account{kpis.hot === 1 ? "" : "s"} today</span>
@@ -120,7 +109,7 @@ function Hero({ views, reachOut, kpis }: { views: AccountView[]; reachOut: strin
             </Link>
           </span>
         )}
-      </motion.h1>
+      </h1>
     </header>
   );
 }
@@ -160,7 +149,7 @@ function KpiStrip({ kpis }: { kpis: Kpis }) {
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {tiles.map((t, i) => (
-        <motion.div key={t.label} custom={i} variants={rise} initial="hidden" animate="show">
+        <div key={t.label} className="enter" style={{ animationDelay: `${i * 50}ms` }}>
           <Link href={t.href} className="card group flex h-full flex-col gap-2 p-4 transition-colors hover:border-line-strong">
             <span className="flex items-center justify-between">
               <span className="label">{t.label}</span>
@@ -175,9 +164,9 @@ function KpiStrip({ kpis }: { kpis: Kpis }) {
               )}
             </span>
           </Link>
-        </motion.div>
+        </div>
       ))}
-      <motion.div custom={3} variants={rise} initial="hidden" animate="show">
+      <div className="enter" style={{ animationDelay: "150ms" }}>
         <Link href="/runs" className="card flex h-full flex-col gap-2 p-4 transition-colors hover:border-line-strong">
           <span className="flex items-center justify-between">
             <span className="label">Last scan</span>
@@ -189,7 +178,7 @@ function KpiStrip({ kpis }: { kpis: Kpis }) {
           </span>
           <span className={cn("text-[11px]", kpis.integrityOk ? "text-ok" : "text-faint")}>{kpis.integrityOk ? "Your data untouched ✓" : "—"}</span>
         </Link>
-      </motion.div>
+      </div>
     </div>
   );
 }

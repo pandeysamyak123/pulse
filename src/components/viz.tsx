@@ -7,18 +7,21 @@ import { cn, fmtDate, SIGNAL_LABEL, TIER_META } from "@/lib/format";
 import type { BreakdownEntry, Tier } from "@/lib/types";
 import { SignalIcon, Tip } from "./ui";
 
-const MotionLink = motion.create(Link);
 
 /* ───────── Count-up number ───────── */
 export function CountUp({ value, decimals = 0, className }: { value: number; decimals?: number; className?: string }) {
   const reduce = useReducedMotion();
-  const mv = useMotionValue(reduce ? value : 0);
+  const mv = useMotionValue(value); // server HTML shows the real number
   const text = useTransform(mv, (v) => v.toFixed(decimals));
+  const first = useRef(true);
   useEffect(() => {
     if (reduce) {
       mv.set(value);
       return;
     }
+    const from = first.current ? 0 : mv.get();
+    first.current = false;
+    mv.set(from);
     const c = animate(mv, value, { duration: 0.9, ease: [0.16, 1, 0.3, 1] });
     return () => c.stop();
   }, [value, reduce, mv]);
@@ -80,7 +83,7 @@ export function WarmthRing({
         </linearGradient>
       </defs>
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line-strong)" strokeWidth={stroke} />
-      <motion.circle
+      <circle
         cx={size / 2}
         cy={size / 2}
         r={r}
@@ -89,9 +92,8 @@ export function WarmthRing({
         strokeWidth={stroke}
         strokeLinecap="round"
         strokeDasharray={c}
-        initial={{ strokeDashoffset: reduce ? c * (1 - pct) : c }}
-        animate={{ strokeDashoffset: c * (1 - pct) }}
-        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+        className="ring-fill"
+        style={{ strokeDashoffset: c * (1 - pct), ["--from" as string]: c }}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
       />
     </svg>
@@ -233,17 +235,7 @@ export function Sparkline({
           </linearGradient>
         </defs>
         <path d={`${d} L${width},${height} L0,${height} Z`} fill={`url(#s${id})`} />
-        <motion.path
-          d={d}
-          fill="none"
-          stroke={color}
-          strokeWidth={1.75}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-        />
+        <path d={d} fill="none" stroke={color} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="draw" />
         <circle cx={(points.length - 1) * step} cy={y(points[points.length - 1])} r={2.25} fill={color} />
       </svg>
     </Tip>
@@ -303,15 +295,12 @@ function RowCells({ row, max, rowIndex }: { row: { id: string; name: string; tie
             }
             className="block"
           >
-            <MotionLink
+            <Link
               href={`/accounts/${row.id}`}
               aria-label={`${row.name}: ${c.headlines.length} signals`}
-              initial={{ opacity: 0, scale: 0.4 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15 + i * 0.035 + rowIndex * 0.02, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ scale: 1.18 }}
-              className={cn("block h-6 w-full rounded-md", t > 0.7 && "cell-hot")}
+              className={cn("cell-in block h-6 w-full rounded-md transition-transform hover:scale-[1.18]", t > 0.7 && "cell-hot")}
               style={{
+                animationDelay: `${150 + i * 35 + rowIndex * 20}ms`,
                 background: `color-mix(in oklab, ${color} ${Math.round(25 + t * 75)}%, transparent)`,
                 boxShadow: t > 0.6 ? `0 0 ${8 + t * 10}px color-mix(in oklab, ${color} 55%, transparent)` : undefined,
               }}

@@ -132,7 +132,7 @@ export function AccountWorkspace(p: WorkspaceProps) {
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.16 }}>
           {tab === "overview" && <Overview {...p} goTo={setTab} />}
           {tab === "updates" && <Updates articles={p.articles} signals={p.signals} />}

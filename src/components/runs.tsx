@@ -66,7 +66,7 @@ function RunRow({ r, i }: { r: ScanRun; i: number }) {
   const errs = (r.errors ?? []).filter(Boolean);
   const models = Object.entries(r.summary?.models ?? {});
   return (
-    <motion.li initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.03 }} className="card p-4">
+    <li className="card enter p-4" style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}>
       <button onClick={() => setOpen((o) => !o)} className="flex w-full flex-wrap items-center gap-x-4 gap-y-3 text-left" aria-expanded={open}>
         <span className="w-40 shrink-0">
           <span className="block text-sm font-medium">{fmtDateTime(r.started_at)}</span>
@@ -143,7 +143,7 @@ function RunRow({ r, i }: { r: ScanRun; i: number }) {
           </div>
         </div>
       )}
-    </motion.li>
+    </li>
   );
 }
 
