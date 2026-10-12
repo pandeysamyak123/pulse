@@ -5,6 +5,9 @@ import type { AccountRow, FetchStats, RawItem } from "./types";
 
 export const MAX_PER_ACCOUNT = 12;
 export const WINDOW_DAYS = 7;
+/** First scan of a new account backfills a month so decay/trends have history from day one. */
+export const BACKFILL_DAYS = 30;
+export const BACKFILL_CAP = 20;
 
 export function normaliseUrl(u: string): string {
   try {
@@ -70,7 +73,7 @@ export function prefilter(
   a: AccountRow,
   items: RawItem[],
   storedUrls: Set<string>,
-  now = Date.now(),
+  opts: { windowDays?: number; cap?: number; now?: number } = {},
 ): { kept: RawItem[]; stats: Omit<FetchStats, "queries" | "sourceErrors"> } {
   const dropped = { noMention: 0, excluded: 0, alreadyStored: 0, stale: 0, overCap: 0 };
 
@@ -102,7 +105,9 @@ export function prefilter(
     deduped.push({ ...it, url });
   }
 
-  const cutoff = now - WINDOW_DAYS * 86_400_000;
+  const now = opts.now ?? Date.now();
+  const cap = opts.cap ?? MAX_PER_ACCOUNT;
+  const cutoff = now - (opts.windowDays ?? WINDOW_DAYS) * 86_400_000;
   const kept: RawItem[] = [];
   for (const it of deduped) {
     const text = `${it.title} ${it.snippet}`;
@@ -113,13 +118,13 @@ export function prefilter(
     else if (storedUrls.has(it.url)) dropped.alreadyStored++;
     else kept.push(it);
   }
-  dropped.overCap = Math.max(0, kept.length - MAX_PER_ACCOUNT);
+  dropped.overCap = Math.max(0, kept.length - cap);
   // Spend the 12-item budget on likely triggers first, then general news, then market chatter;
   // newest first within each tier.
   kept.sort((x, y) => priority(x) - priority(y) || (Date.parse(y.published_at ?? "") || 0) - (Date.parse(x.published_at ?? "") || 0));
 
   return {
-    kept: kept.slice(0, MAX_PER_ACCOUNT),
-    stats: { fetched: items.length, afterDedupe: deduped.length, afterPrefilter: Math.min(kept.length, MAX_PER_ACCOUNT), dropped },
+    kept: kept.slice(0, cap),
+    stats: { fetched: items.length, afterDedupe: deduped.length, afterPrefilter: Math.min(kept.length, cap), dropped },
   };
 }

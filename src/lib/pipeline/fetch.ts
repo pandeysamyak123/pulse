@@ -29,11 +29,11 @@ export function companyClause(a: Pick<AccountRow, "company_name" | "search_alias
   return names.length === 1 ? names[0] : `(${names.join(" OR ")})`;
 }
 
-export function buildGoogleQueries(a: AccountRow): { key: string; q: string }[] {
+export function buildGoogleQueries(a: AccountRow, days = 7): { key: string; q: string }[] {
   const who = companyClause(a);
   return [
-    ...TOPICS.map((t) => ({ key: t.key, q: `${who} ${t.clause} when:7d` })),
-    { key: "company", q: `${who} when:7d` }, // plain company-news query for the feed
+    ...TOPICS.map((t) => ({ key: t.key, q: `${who} ${t.clause} when:${days}d` })),
+    { key: "company", q: `${who} when:${days}d` }, // plain company-news query for the feed
   ];
 }
 
@@ -122,9 +122,9 @@ export async function fetchGdeltAll(accounts: AccountRow[]): Promise<RawItem[]> 
 }
 
 /** All raw items for an account across sources. Source failures are reported, never thrown. */
-export async function fetchAccount(a: AccountRow, gdeltPool: RawItem[] = []) {
+export async function fetchAccount(a: AccountRow, gdeltPool: RawItem[] = [], days = 7) {
   const errors: string[] = [];
-  const queries = buildGoogleQueries(a);
+  const queries = buildGoogleQueries(a, days);
   const results = await Promise.all(
     queries.map((q) =>
       fetchGoogleNews(q.q, q.key).catch((e) => {

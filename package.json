@@ -10,7 +10,8 @@
     "seed": "tsx scripts/seed.ts",
     "test:integrity": "tsx scripts/test-integrity.ts",
     "scan": "tsx scripts/scan.ts",
-    "eval": "tsx eval/run-eval.ts"
+    "eval": "tsx eval/run-eval.ts",
+    "reset:system": "tsx scripts/reset-system.ts"
   },
   "dependencies": {
     "@google/genai": "^2.28.0",
