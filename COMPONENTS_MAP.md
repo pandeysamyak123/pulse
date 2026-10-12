@@ -1,5 +1,7 @@
 # Pulse — Components Map
 
+**Printable swimlane map (PDF):** [`docs/Pulse-Components-Map.pdf`](docs/Pulse-Components-Map.pdf) · source [`docs/component-map.html`](docs/component-map.html)
+
 ![Components map](docs/components-map.png)
 
 Live version: [`/how-it-works`](https://pulse-ten-drab.vercel.app/how-it-works) · Source: [`docs/components-map.mmd`](docs/components-map.mmd) (generated from `src/lib/components-map.ts`).

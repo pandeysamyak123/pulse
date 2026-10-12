@@ -1,0 +1,225 @@
+<title>Pulse Components Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: swimlane matrix. Rows are actors, columns are the six stages; numbered cards sit in their cell and dashed connectors (drawn after layout) follow the flow. Single light print theme by choice. */
+:root {
+  color-scheme: light;
+  --paper: #f3f2ec;
+  --ink: #16211d;
+  --ink-2: #4b5651;
+  --rail: #1f1a3a;       /* actor column + header */
+  --rail-ink: #ecebf5;
+  --rail-ink-2: #b2aed0;
+  --lane-a: #ffffff;
+  --lane-b: #f6f6f2;
+  --line: #d8d9d0;
+  --wire: #5d6661;
+  --c-trigger: #6f4bd8;
+  --c-input: #2f6fd0;
+  --c-context: #3c8b4a;
+  --c-proc: #b8860b;
+  --c-ai: #c4386e;
+  --c-output: #c7652a;
+  --c-human: #7a4f34;
+  --display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", Menlo, monospace;
+}
+@page { size: 19in 27in; margin: 0; }
+html, body { background: var(--paper); color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media print { .sheet { width: 1760px; } body { width: 1824px; } }
+body { margin: 0; padding-block: 28px 36px; padding-inline: 32px; font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+.sheet { width: 1760px; max-width: 100%; margin: 0 auto; }
+.kicker { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); }
+h1 { font-family: var(--display); font-weight: 800; font-size: 48px; letter-spacing: -0.03em; line-height: 1.05; margin: 8px 0 12px; text-wrap: balance; }
+.lede { max-width: 980px; font-size: 16.5px; color: var(--ink-2); margin: 0 0 14px; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); margin-bottom: 18px; }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 13px; height: 13px; border: 2px solid; border-radius: 3px; display: inline-block; }
+
+.matrix-wrap { overflow-x: auto; }
+.matrix { position: relative; display: grid; grid-template-columns: 210px repeat(6, minmax(0, 1fr)); border-radius: 18px; overflow: hidden; background: var(--lane-a); box-shadow: 0 1px 0 var(--line), 0 0 0 1px var(--line); min-width: 1400px; }
+.hd { background: var(--rail); color: var(--rail-ink); padding: 16px 12px; text-align: center; border-left: 1px solid rgba(255,255,255,.08); }
+.hd b { display: block; font-family: var(--display); font-size: 18px; font-weight: 700; }
+.hd small { font-family: var(--mono); font-size: 11.5px; color: var(--rail-ink-2); letter-spacing: .04em; }
+.hd.actor-h { text-align: left; border-left: 0; display: flex; align-items: center; font-family: var(--display); font-weight: 700; font-size: 16px; }
+.actor { background: var(--rail); color: var(--rail-ink); padding: 16px; display: flex; flex-direction: column; justify-content: center; border-top: 1px solid rgba(255,255,255,.08); }
+.actor b { font-family: var(--display); font-size: 17px; font-weight: 700; }
+.actor small { font-family: var(--mono); font-size: 11.5px; color: var(--rail-ink-2); margin-top: 3px; line-height: 1.4; }
+.cell { padding: 14px 30px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; min-height: 92px; }
+.lane-b { background: var(--lane-b); }
+.card { position: relative; z-index: 2; width: 100%; max-width: 212px; background: #fff; border: 1.6px solid; border-radius: 10px; padding: 10px 12px 9px; font-size: 13px; line-height: 1.4; }
+.card .n { display: inline-block; font-family: var(--mono); font-weight: 500; font-size: 12px; color: #fff; padding: 1px 6px; border-radius: 5px; margin-right: 5px; vertical-align: 1px; }
+.card .meta { display: block; margin-top: 7px; font-family: var(--mono); font-size: 11px; color: var(--ink-2); line-height: 1.45; }
+.card b { font-weight: 700; }
+.k-trigger { border-color: var(--c-trigger); } .k-trigger .n { background: var(--c-trigger); }
+.k-input { border-color: var(--c-input); } .k-input .n { background: var(--c-input); }
+.k-context { border-color: var(--c-context); } .k-context .n { background: var(--c-context); }
+.k-proc { border-color: var(--c-proc); } .k-proc .n { background: var(--c-proc); }
+.k-ai { border-color: var(--c-ai); } .k-ai .n { background: var(--c-ai); }
+.k-output { border-color: var(--c-output); } .k-output .n { background: var(--c-output); }
+.k-human { border-color: var(--c-human); } .k-human .n { background: var(--c-human); }
+svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+
+.foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.foot > div { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; }
+.foot h3 { font-family: var(--display); font-size: 16px; margin: 0 0 6px; }
+.foot p { margin: 4px 0; color: var(--ink-2); }
+.foot .cut { border-color: var(--c-human); background: #fbf3ec; }
+@media screen and (max-width: 900px) { .foot { grid-template-columns: 1fr; } h1 { font-size: 34px; } }
+</style>
+
+<div class="sheet">
+  <div class="kicker">MESA end-term · Pulse · as deployed on 12 Oct 2026 · Samyak Pandey</div>
+  <h1>Components map: one scan, news to outreach</h1>
+  <p class="lede">Rows are the actors, columns are the stages. Follow the numbers. Step 1 starts a scan on a schedule or from the dashboard; steps 2–8 read live news, judge it with Gemini Flash and score it in code; step 9 writes back without touching Arjun’s data; steps 10–14 are what Arjun sees and chooses to send. Nothing is sent without his click.</p>
+  <div class="legend">
+    <span><i style="border-color:var(--c-trigger)"></i>Trigger</span>
+    <span><i style="border-color:var(--c-input)"></i>Input</span>
+    <span><i style="border-color:var(--c-context)"></i>Context</span>
+    <span><i style="border-color:var(--c-proc)"></i>Processing (code)</span>
+    <span><i style="border-color:var(--c-ai)"></i>AI (Gemini Flash)</span>
+    <span><i style="border-color:var(--c-output)"></i>Output</span>
+    <span><i style="border-color:var(--c-human)"></i>Human</span>
+  </div>
+
+  <div class="matrix-wrap">
+  <div class="matrix" id="matrix">
+    <div class="hd actor-h">Actor</div>
+    <div class="hd"><b>Trigger</b><small>what starts it</small></div>
+    <div class="hd"><b>Input</b><small>what comes in</small></div>
+    <div class="hd"><b>Context</b><small>what it knows</small></div>
+    <div class="hd"><b>Processing</b><small>rules in code</small></div>
+    <div class="hd"><b>AI</b><small>where a model works</small></div>
+    <div class="hd"><b>Output</b><small>what leaves</small></div>
+  </div>
+  </div>
+
+  <div class="foot">
+    <div>
+      <h3>The rule: never overwrite Arjun</h3>
+      <p>The pipeline writes <b>accounts</b> only through <b>apply_signal_update()</b>, which sets system columns. Guard triggers refuse any write to his fields, contacts, notes or history unless it comes from his own RPCs. A hash of all his data is taken before and after every scan; the Runs page re-attacks it live (7/7 blocked).</p>
+    </div>
+    <div>
+      <h3>Why LinkedIn is hand-off only</h3>
+      <p>LinkedIn’s terms forbid scraping and automated messaging, and automation risks banning Arjun’s account. Executive moves are caught through <b>news</b>; Pulse drafts the note within LinkedIn’s 280-character limit, copies it and opens the profile. Arjun sends it and taps <b>Mark as sent</b>.</p>
+    </div>
+    <div class="cut">
+      <h3>The Cut: AI judges, code decides</h3>
+      <p>Gemini reads the news and writes; it never sets the score or sends anything. Warmth is a deterministic formula Arjun can open and check. Drafts that invent a figure, flatter, or skip the trigger are regenerated once and stay flagged. <b>SAFE_MODE</b> keeps every outreach email in the demo inbox.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Rows = actors, cols = stages (1..6). Cards are placed into their cell; connectors are drawn after layout.
+const ACTORS = [
+  ['cron', 'Vercel Cron', 'scheduled jobs · vercel.json'],
+  ['news', 'Live news', 'Google News RSS · GDELT'],
+  ['server', 'Our server', 'Next.js on Vercel (Tokyo)'],
+  ['gemini', 'Gemini Flash', '@google/genai · Flash model pool'],
+  ['db', 'Supabase', 'Postgres · RLS · guard triggers'],
+  ['resend', 'Resend', 'Hot List · outreach email'],
+  ['arjun', 'Arjun', 'Enterprise Sales · dashboard'],
+  ['linkedin', 'LinkedIn', 'hand-off only · never automated'],
+];
+const CARDS = [
+  { id: 'c1', row: 'cron', col: 1, k: 'trigger', n: '1', html: '<b>Daily scan 13:00 IST</b>, just after the Gemini quota resets. <b>Hot List</b> Mon &amp; Thu 08:00 IST.', meta: '/api/cron/scan · /api/cron/hotlist · CRON_SECRET' },
+  { id: 'c1b', row: 'arjun', col: 1, k: 'trigger', n: '1b', html: '<b>Run scan now</b> from the top bar; live pipeline panel shows each stage.', meta: '/api/scan · batches of 3 · 1 scan / 10 min' },
+  { id: 'c2', row: 'news', col: 2, k: 'input', n: '2', html: '<b>5 queries per account</b>: hiring/expansion, leadership, funding, workforce, plain company news. Last 7 days (30 on first scan).', meta: 'lib/pipeline/fetch.ts · 1 pooled GDELT query' },
+  { id: 'c3', row: 'db', col: 3, k: 'context', n: '3', html: '<b>Arjun’s accounts</b>: aliases, exclude terms (e.g. “Apollo Tyres”), stage, contacts, notes and reach-out history. <b>Read-only</b> to the pipeline.', meta: 'accounts · contacts · notes · activities' },
+  { id: 'c4', row: 'server', col: 4, k: 'proc', n: '4', html: '<b>Prefilter, no AI</b>: dedupe URLs and near-identical titles, whole-word company match, exclude terms, already stored, cap 12, market chatter last.', meta: 'prefilter.ts · Licious ≠ “Mac-A-Licious”' },
+  { id: 'c5', row: 'gemini', col: 5, k: 'ai', n: '5', html: '<b>Classify</b>, 1 call per account: about this company? trigger? type, <b>verbatim evidence</b> (checked in code), confidence, event key.', meta: 'classify.ts · JSON schema + zod · retry once' },
+  { id: 'c6', row: 'server', col: 4, k: 'proc', n: '6', html: '<b>Cluster + score</b>: same event merges; age from first report; base × confidence × decay × stage; top 3, cap 100 → hot / warm / cool / quiet.', meta: 'score.ts · 25 unit tests' },
+  { id: 'c7', row: 'gemini', col: 5, k: 'ai', n: '7', html: '<b>Brief, why-now, angle</b>, best contact, email + LinkedIn drafts, follow-up if unanswered; <b>digest</b> of Arjun’s notes and open loops.', meta: 'enrich.ts · only when the top signal changed' },
+  { id: 'c8', row: 'server', col: 4, k: 'proc', n: '8', html: '<b>Draft gate</b>: channel limits, banned phrases, trigger named, <b>every figure must exist in the sources</b> → regenerate once, else flag.', meta: 'draft-checks.ts' },
+  { id: 'c9', row: 'db', col: 6, k: 'output', n: '9', html: '<b>Writes SYSTEM data only</b>: articles, signals, drafts, digests, scores. Hash of Arjun’s data before = after, stored per run.', meta: 'apply_signal_update() · scan_runs' },
+  { id: 'c10', row: 'server', col: 6, k: 'output', n: '10', html: '<b>Dashboard</b>: Today (5-second answer), account workspace, triggers, runs with a live integrity attack.', meta: 'pulse-ten-drab.vercel.app' },
+  { id: 'c11', row: 'resend', col: 6, k: 'output', n: '11', html: '<b>Hot List</b> to Arjun: top 10 by 72-hour signals, angle, source, deep link; follow-ups due; gone quiet.', meta: 'email_runs · Gmail-safe HTML' },
+  { id: 'c12', row: 'arjun', col: 6, k: 'human', n: '12', html: 'Reviews the draft, edits, picks the contact, then <b>one click to send</b>; logs calls and notes. His writes go through <b>his RPCs</b> only.', meta: 'log_activity · add_note · update_manual_fields' },
+  { id: 'c13', row: 'resend', col: 6, k: 'output', n: '13', html: '<b>Outreach email</b> after the confirm dialog; reply-to Arjun. <b>SAFE_MODE</b> redirects to the demo inbox.', meta: '/api/send-email · 10 / hour' },
+  { id: 'c14', row: 'linkedin', col: 6, k: 'human', n: '14', html: '<b>Copy &amp; open profile</b>; Arjun sends the note himself, then taps <b>Mark as sent</b>.', meta: 'no scraping · no automation' },
+];
+// [from, to, route, offset]. Routes keep every wire in empty lanes instead of behind cards.
+const EDGES = [
+  ['c1', 'c2', 'intoLeft'], ['c1b', 'c2', 'intoLeft'],
+  ['c2', 'c4', 'intoLeft'], ['c3', 'c4', 'intoLeft'],
+  ['c4', 'c5', 'intoLeft'], ['c5', 'c6', 'outLeft'], ['c6', 'c7', 'intoLeft'],
+  ['c7', 'c8', 'outLeft'], ['c8', 'c9', 'trunk'], ['c8', 'c10'],
+  ['c9', 'c11', 'down'], ['c10', 'c12', 'rightSide'], ['c12', 'c13', 'up'], ['c12', 'c14', 'down'],
+];
+
+const m = document.getElementById('matrix');
+ACTORS.forEach(([key, name, sub], r) => {
+  const a = document.createElement('div');
+  a.className = 'actor';
+  a.innerHTML = `<b>${name}</b><small>${sub}</small>`;
+  m.appendChild(a);
+  for (let c = 1; c <= 6; c++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (r % 2 ? ' lane-b' : '');
+    cell.dataset.key = `${key}-${c}`;
+    m.appendChild(cell);
+  }
+});
+for (const c of CARDS) {
+  const el = document.createElement('div');
+  el.className = `card k-${c.k}`;
+  el.id = c.id;
+  el.innerHTML = `<span class="n">${c.n}</span>${c.html}${c.meta ? `<span class="meta">${c.meta}</span>` : ''}`;
+  m.querySelector(`[data-key="${c.row}-${c.col}"]`).appendChild(el);
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function draw() {
+  m.querySelector('svg.wires')?.remove();
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'wires');
+  svg.innerHTML = '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5d6661"/></marker></defs>';
+  const box = m.getBoundingClientRect();
+  const R = (id) => { const r = document.getElementById(id).getBoundingClientRect(); return { l: r.left - box.left, r: r.right - box.left, t: r.top - box.top, b: r.bottom - box.top, cx: (r.left + r.right) / 2 - box.left, cy: (r.top + r.bottom) / 2 - box.top }; };
+  for (const [a, b, route, off = 0] of EDGES) {
+    const s = R(a), t = R(b);
+    let d;
+    if (route === 'intoLeft' || route === 'trunk') {
+      // out of the source's right side, along a vertical trunk just left of the target, into its left side
+      const x = t.l - 22;
+      d = `M${s.r},${s.cy} H${x} V${t.cy} H${t.l - 2}`;
+    } else if (route === 'outLeft') {
+      // from a card on the right back to a card on its left: out the left side, along the gap, into the target's right side
+      const x = t.r + 14;
+      d = `M${s.l},${s.cy} H${x} V${t.cy} H${t.r + 2}`;
+    } else if (route === 'downRight') {
+      d = `M${s.r},${s.cy} H${t.cx + off} V${t.t - 2}`;
+    } else if (route === 'down') {
+      d = `M${s.cx},${s.b} V${t.t - 2}`;
+    } else if (route === 'up') {
+      d = `M${s.cx},${s.t} V${t.b + 2}`;
+    } else if (route === 'rightSide') {
+      // down the right-hand margin of the column, clear of the cards stacked in between
+      const x = Math.max(s.r, t.r) + 12;
+      d = `M${s.r},${s.cy} H${x} V${t.cy} H${t.r + 2}`;
+    } else {
+      const right = t.l > s.r;
+      const x0 = right ? s.r : s.l, x1 = right ? t.l - 2 : t.r + 2;
+      const xm = (x0 + x1) / 2;
+      d = `M${x0},${s.cy} H${xm} V${t.cy} H${x1}`;
+    }
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', '#5d6661');
+    p.setAttribute('stroke-width', '1.6');
+    p.setAttribute('stroke-dasharray', '6 5');
+    p.setAttribute('marker-end', 'url(#ah)');
+    svg.appendChild(p);
+  }
+  m.appendChild(svg);
+}
+const ready = document.fonts ? document.fonts.ready : Promise.resolve();
+ready.then(() => requestAnimationFrame(draw));
+window.addEventListener('resize', () => requestAnimationFrame(draw));
+window.addEventListener('beforeprint', draw);
+if (window.matchMedia) window.matchMedia('print').addEventListener?.('change', draw);
+</script>
