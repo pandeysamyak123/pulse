@@ -60,8 +60,10 @@ export function AppShell({
   accounts,
   lastRun,
   safeMode,
+  passcodeRequired,
 }: {
   children: ReactNode;
+  passcodeRequired: boolean;
   authed: boolean;
   accounts: ShellAccount[];
   lastRun: ScanRun | null;
@@ -96,7 +98,7 @@ export function AppShell({
       <div className="flex min-h-dvh">
         <Rail />
         <div className="flex min-w-0 flex-1 flex-col md:pl-16">
-          <TopBar lastRun={lastRun} safeMode={safeMode} />
+          <TopBar lastRun={lastRun} safeMode={safeMode} passcodeRequired={passcodeRequired} />
           <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-24 pt-4 sm:px-6 lg:px-8">{children}</main>
         </div>
       </div>
@@ -174,7 +176,7 @@ export function PulseMark({ className }: { className?: string }) {
 }
 
 /* ───────── Top bar ───────── */
-function TopBar({ lastRun, safeMode }: { lastRun: ScanRun | null; safeMode: boolean }) {
+function TopBar({ lastRun, safeMode, passcodeRequired }: { lastRun: ScanRun | null; safeMode: boolean; passcodeRequired: boolean }) {
   const { authed, openLogin, openPalette, runScan, scanning } = useApp();
   const router = useRouter();
   return (
@@ -221,7 +223,7 @@ function TopBar({ lastRun, safeMode }: { lastRun: ScanRun | null; safeMode: bool
             </Tip>
             <HotlistPreviewButton />
             <ThemeToggle />
-            {authed ? (
+            {!passcodeRequired ? null : authed ? (
               <Tip label="Lock (switch to read-only demo)" side="bottom">
                 <Button
                   variant="ghost"

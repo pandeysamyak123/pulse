@@ -1,6 +1,6 @@
 # Pulse — account signals & outreach workspace
 
-**Live:** https://pulse-ten-drab.vercel.app · read-only demo opens without a passcode · [Components Map](COMPONENTS_MAP.md)
+**Live:** https://pulse-ten-drab.vercel.app · fully open, no passcode (`SAFE_MODE` keeps outreach email in the demo inbox) · [Components Map](COMPONENTS_MAP.md)
 
 Arjun sells a workforce-management SaaS (fictional "ShiftSense") to Indian mid-market and enterprise companies. Pulse tells him **in five seconds who to contact today and why**: it reads live news about every account, detects workforce triggers, scores warmth with a transparent formula, drafts outreach tied to the trigger, and emails him a Hot List every Monday and Thursday — **without ever overwriting his own notes, history or fields.**
 
@@ -26,7 +26,7 @@ Every column and table has exactly one owner. Four layers enforce it (`supabase/
 
 1. **Single write path for automation.** The pipeline touches `accounts` only through `apply_signal_update()` (`SECURITY DEFINER`, sets `app.actor='system'`), which writes SYSTEM columns and ignores everything else.
 2. **Guard triggers.** Any change to Arjun's columns, or any insert/update/delete on `contacts`, `activities`, `notes`, raises `OWNERSHIP_VIOLATION` unless `app.actor='arjun'`. This is stricter than "block the system actor": a raw service-role `.update()` with no actor is blocked too. Activities are append-only (only outcome/note can change).
-3. **Arjun's write path.** UI edits go through `update_manual_fields`, `log_activity`, `add_note`, `upsert_contact` (passcode-protected server actions). `log_activity` also moves `last_contact_date` — Arjun's own action.
+3. **Arjun's write path.** UI edits go through `update_manual_fields`, `log_activity`, `add_note`, `upsert_contact` (server actions). `log_activity` also moves `last_contact_date` — Arjun's own action.
 4. **Proof.** `arjun_data_hash()` (md5 over all Arjun data) is stored before/after every scan in `scan_runs` and shown as the 🛡 shield. `npm run test:integrity` runs the full pipeline, sends a hostile payload through the system write path, asserts identical hashes, and asserts that system/no-actor writes to `arjun_notes`, `last_contact_date`, activities, notes and contacts all throw.
 
 ```
@@ -110,7 +110,7 @@ npm run dev
 | `HOTLIST_TO_EMAIL`, `ARJUN_REPLY_TO` | Hot List recipient, reply-to on outreach |
 | `DEMO_CONTACT_EMAIL`, `SAFE_MODE` | Demo inbox; redirect all outreach (default on) |
 | `CRON_SECRET` | `Authorization: Bearer` for `/api/cron/*` |
-| `APP_PASSCODE` | Unlocks write actions (httpOnly cookie) |
+| `REQUIRE_PASSCODE`, `APP_PASSCODE` | Optional: set `REQUIRE_PASSCODE=true` to lock write actions behind `APP_PASSCODE` (read-only demo otherwise). Off by default. |
 | `NEXT_PUBLIC_APP_URL` | Deep links in the Hot List |
 
 **Crons** (`vercel.json`, UTC): scan `30 0 * * *` (06:00 IST), Hot List `30 2 * * 1,4` (Mon/Thu 08:00 IST; runs a fresh scan first if the last one is > 6 h old). Cron scans work in batches within a time budget; deferred accounts are logged and picked up next run.

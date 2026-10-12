@@ -18,7 +18,11 @@ export function passcodeMatches(input: string) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+/** Passcode is off unless REQUIRE_PASSCODE=true: everyone gets full access. */
+export const passcodeRequired = () => process.env.REQUIRE_PASSCODE === "true";
+
 export async function isAuthed(): Promise<boolean> {
+  if (!passcodeRequired()) return true;
   const c = (await cookies()).get(SESSION_COOKIE)?.value;
   if (!c) return false;
   const a = Buffer.from(c);

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { MotionConfig } from "framer-motion";
 import { AppShell } from "@/components/shell";
-import { isAuthed } from "@/lib/auth";
+import { isAuthed, passcodeRequired } from "@/lib/auth";
 import { getShell } from "@/lib/queries";
 import "./globals.css";
 
@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <MotionConfig reducedMotion="user">
-          <AppShell authed={authed} accounts={shell.accounts} lastRun={shell.lastRun} safeMode={process.env.SAFE_MODE !== "false"}>
+          <AppShell authed={authed} accounts={shell.accounts} lastRun={shell.lastRun} safeMode={process.env.SAFE_MODE !== "false"} passcodeRequired={passcodeRequired()}>
             {children}
           </AppShell>
         </MotionConfig>
