@@ -45,7 +45,6 @@ export function WarmthRing({
   showNumber?: boolean;
 }) {
   const id = useId();
-  const reduce = useReducedMotion();
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, score)) / 100;

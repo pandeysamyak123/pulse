@@ -87,7 +87,8 @@ async function main() {
 
   // Restore the SYSTEM fields the synthetic writes touched.
   for (const a of snapshot) {
-    const { id, company_name: _n, ...sys } = a;
+    const { id, ...rest } = a;
+    const sys = Object.fromEntries(Object.entries(rest).filter(([k]) => k !== "company_name"));
     must(await db.rpc("apply_signal_update", { p_account_id: id, p_payload: sys }), "restore");
   }
 
