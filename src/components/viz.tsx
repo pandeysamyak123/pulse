@@ -7,6 +7,8 @@ import { cn, fmtDate, SIGNAL_LABEL, TIER_META } from "@/lib/format";
 import type { BreakdownEntry, Tier } from "@/lib/types";
 import { SignalIcon, Tip } from "./ui";
 
+const MotionLink = motion.create(Link);
+
 /* ───────── Count-up number ───────── */
 export function CountUp({ value, decimals = 0, className }: { value: number; decimals?: number; className?: string }) {
   const reduce = useReducedMotion();
@@ -268,8 +270,8 @@ export function HeatGrid({
               {i === days.length - 1 ? "today" : fmtDate(d, { day: "numeric" })}
             </span>
           ))}
-          {rows.map((r) => (
-            <RowCells key={r.id} row={r} max={max} />
+          {rows.map((r, ri) => (
+            <RowCells key={r.id} row={r} max={max} rowIndex={ri} />
           ))}
         </div>
       </div>
@@ -277,7 +279,7 @@ export function HeatGrid({
   );
 }
 
-function RowCells({ row, max }: { row: { id: string; name: string; tier: Tier; cells: HeatCell[] }; max: number }) {
+function RowCells({ row, max, rowIndex }: { row: { id: string; name: string; tier: Tier; cells: HeatCell[] }; max: number; rowIndex: number }) {
   const color = TIER_META[row.tier].color;
   return (
     <>
@@ -301,10 +303,14 @@ function RowCells({ row, max }: { row: { id: string; name: string; tier: Tier; c
             }
             className="block"
           >
-            <Link
+            <MotionLink
               href={`/accounts/${row.id}`}
               aria-label={`${row.name}: ${c.headlines.length} signals`}
-              className="block h-6 w-full rounded-md transition-transform hover:scale-110"
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.15 + i * 0.035 + rowIndex * 0.02, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ scale: 1.18 }}
+              className={cn("block h-6 w-full rounded-md", t > 0.7 && "cell-hot")}
               style={{
                 background: `color-mix(in oklab, ${color} ${Math.round(25 + t * 75)}%, transparent)`,
                 boxShadow: t > 0.6 ? `0 0 ${8 + t * 10}px color-mix(in oklab, ${color} 55%, transparent)` : undefined,

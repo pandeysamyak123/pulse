@@ -93,9 +93,34 @@ export function AppShell({
     scan.start();
   }, [authed, scan]);
 
+  // One pointer listener drives the spotlight on every .card.
+  useEffect(() => {
+    let raf = 0;
+    const onMove = (e: PointerEvent) => {
+      const card = (e.target as HTMLElement | null)?.closest?.(".card") as HTMLElement | null;
+      if (!card) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        card.style.setProperty("--my", `${e.clientY - r.top}px`);
+      });
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
+  }, []);
+
+  const heat = accounts.length ? Math.min(1, accounts.filter((a) => a.warmth_tier === "hot").length / Math.max(3, accounts.length * 0.3)) : 0.3;
+
   return (
     <AppCtx.Provider value={{ authed, openLogin: () => setLoginOpen(true), openPalette: () => setPalette(true), runScan, scanning: scan.running }}>
-      <div className="flex min-h-dvh">
+      <div className="aurora" aria-hidden style={{ ["--heat" as string]: heat }}>
+        <span className="a1" />
+        <span className="a2" />
+        <span className="a3" />
+      </div>
+      <div className="grain" aria-hidden />
+      <div className="app-layer flex min-h-dvh">
         <Rail />
         <div className="flex min-w-0 flex-1 flex-col md:pl-16">
           <TopBar lastRun={lastRun} safeMode={safeMode} passcodeRequired={passcodeRequired} />
@@ -106,6 +131,7 @@ export function AppShell({
       <CommandPalette open={palette} onClose={() => setPalette(false)} accounts={accounts} />
       <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
       <ScanPanel scan={scan} />
+      <Burst fire={scan.burst} />
     </AppCtx.Provider>
   );
 }
@@ -168,8 +194,9 @@ function MobileNav() {
 }
 
 export function PulseMark({ className }: { className?: string }) {
+  const { scanning } = useApp();
   return (
-    <svg viewBox="0 0 24 24" className={cn("h-4 w-4", className)} fill="none" stroke="white" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg viewBox="0 0 24 24" className={cn("ecg h-4 w-4", scanning && "fast", className)} fill="none" stroke="white" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M2 12h4l3-7 4 14 3-7h6" />
     </svg>
   );
@@ -485,6 +512,7 @@ function LoginDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
 
 /* ───────── Live scan experience ───────── */
 type ScanState = {
+  burst: number;
   running: boolean;
   open: boolean;
   stage: number; // 0..5
@@ -500,6 +528,7 @@ const STAGE_INDEX: Record<string, number> = { fetching: 0, filtering: 1, reading
 function useScan(): ScanState {
   const router = useRouter();
   const [running, setRunning] = useState(false);
+  const [burst, setBurst] = useState(0);
   const [open, setOpen] = useState(false);
   const [stage, setStage] = useState(0);
   const [current, setCurrent] = useState("");
@@ -520,7 +549,11 @@ function useScan(): ScanState {
     try {
       const s = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "start" }) });
       const { runId, batches, error } = await s.json();
-      if (!runId) throw new Error(error ?? "Could not start scan");
+      if (!runId) {
+        toast(s.status === 429 ? "Scan on cooldown" : "Scan not started", { description: error ?? "Could not start scan" });
+        setOpen(false);
+        return;
+      }
       setCounts((c) => ({ ...c, total: batches.flat().length }));
       for (const ids of batches as string[][]) {
         const res = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "batch", runId, ids }) });
@@ -560,6 +593,7 @@ function useScan(): ScanState {
       const fin = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "finish", runId }) }).then((r) => r.json());
       setStage(5);
       setCurrent(fin.integrity_ok ? "Your data untouched ✓" : "Integrity check failed");
+      if (turnedHot.length || newSignals) setBurst((b) => b + 1);
       toast.success(`${newSignals} new trigger${newSignals === 1 ? "" : "s"} · ${turnedHot.length} account${turnedHot.length === 1 ? "" : "s"} turned hot`, {
         description: [turnedHot.join(", "), errors.length ? `${errors.length} account(s) skipped — see Runs` : ""].filter(Boolean).join(" · ") || undefined,
       });
@@ -572,7 +606,7 @@ function useScan(): ScanState {
     }
   }, [router]);
 
-  return { running, open, stage, counts, current, start, close: () => setOpen(false) };
+  return { burst, running, open, stage, counts, current, start, close: () => setOpen(false) };
 }
 
 function ScanPanel({ scan }: { scan: ScanState }) {
@@ -628,4 +662,37 @@ function ScanPanel({ scan }: { scan: ScanState }) {
 
 export function LastScan({ at }: { at: string | null }) {
   return <span className="num">{ago(at)}</span>;
+}
+
+
+/* ───────── Celebration burst when a scan finds something ───────── */
+function Burst({ fire }: { fire: number }) {
+  const [key, setKey] = useState(0);
+  useEffect(() => {
+    if (!fire) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setKey(fire);
+    const t = setTimeout(() => setKey(0), 1600);
+    return () => clearTimeout(t);
+  }, [fire]);
+  if (!key) return null;
+  const colors = ["var(--hot)", "var(--hot-2)", "var(--warm)", "var(--accent)", "var(--cool)"];
+  return (
+    <div className="pointer-events-none fixed right-28 top-7 z-[60]" aria-hidden key={key}>
+      {Array.from({ length: 22 }).map((_, i) => {
+        const a = (i / 22) * Math.PI * 2;
+        const d = 60 + (i % 5) * 18;
+        return (
+          <motion.span
+            key={i}
+            className="absolute h-1.5 w-1.5 rounded-full"
+            style={{ background: colors[i % colors.length] }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{ x: Math.cos(a) * d, y: Math.sin(a) * d + 20, opacity: 0, scale: 0.4 }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+          />
+        );
+      })}
+    </div>
+  );
 }

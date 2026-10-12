@@ -157,7 +157,7 @@ export function TriggerChip({
     <Tip label={summary ? <span><b className="font-semibold">{SIGNAL_LABEL[type]}</b> · {summary}</span> : SIGNAL_LABEL[type]}>
       <span
         tabIndex={0}
-        className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 py-0.5 pl-1.5 pr-2 text-xs"
+        className="lift inline-flex max-w-full items-center gap-1.5 rounded-full border border-line-strong bg-surface-2 py-0.5 pl-1.5 pr-2 text-xs"
       >
         <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full" style={{ background: `color-mix(in oklab, ${color} 18%, transparent)`, color }}>
           <SignalIcon type={type} className="h-2.5 w-2.5" />

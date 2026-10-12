@@ -189,3 +189,125 @@ svg .label {
   color: inherit;
   font-weight: inherit;
 }
+
+/* ═════════════ Immersive layer ═════════════ */
+
+/* Ambient aurora: slow blurred light behind everything, warmer when more accounts are hot (--heat 0..1) */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aurora::after {
+  /* faint engineering grid, fading out toward the bottom */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, #000 30%, transparent 75%);
+  opacity: 0.55;
+}
+.aurora span {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.32;
+  will-change: transform;
+}
+.aurora .a1 { width: 46vw; height: 46vw; left: -8vw; top: -22vw; background: var(--accent); animation: drift1 26s ease-in-out infinite alternate; }
+.aurora .a2 { width: 38vw; height: 38vw; right: -10vw; top: -16vw; background: color-mix(in oklab, var(--hot) calc(var(--heat, 0.3) * 100%), var(--cool)); animation: drift2 32s ease-in-out infinite alternate; }
+.aurora .a3 { width: 30vw; height: 30vw; left: 35vw; top: -20vw; background: var(--cool); opacity: 0.18; animation: drift3 38s ease-in-out infinite alternate; }
+:root[data-theme="light"] .aurora span { opacity: 0.16; }
+@keyframes drift1 { to { transform: translate3d(12vw, 6vw, 0) scale(1.15); } }
+@keyframes drift2 { to { transform: translate3d(-10vw, 8vw, 0) scale(0.9); } }
+@keyframes drift3 { to { transform: translate3d(-8vw, 10vw, 0) scale(1.2); } }
+
+/* Film grain for depth */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+:root[data-theme="light"] .grain { opacity: 0.025; }
+
+/* Spotlight cards: light follows the cursor (--mx/--my set by a single pointer listener) */
+.card { position: relative; isolation: isolate; }
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) 11%, transparent), transparent 60%);
+}
+.card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--accent) 55%, transparent), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.card:hover::before, .card:hover::after { opacity: 1; }
+
+/* Hot cards: a slowly rotating gradient edge */
+@property --angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.hot-border::after {
+  opacity: 1 !important;
+  padding: 1.5px;
+  background: conic-gradient(from var(--angle), transparent 0deg, var(--hot) 70deg, var(--hot-2) 110deg, transparent 180deg, transparent 360deg);
+  animation: spin-angle 5s linear infinite;
+}
+@keyframes spin-angle { to { --angle: 360deg; } }
+
+/* Live heartbeat logo */
+.ecg path { stroke-dasharray: 48; stroke-dashoffset: 48; animation: ecg 2.4s ease-in-out infinite; }
+.ecg.fast path { animation-duration: 0.9s; }
+@keyframes ecg { 0% { stroke-dashoffset: 48; } 45%, 60% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -48; } }
+
+/* Gradient headline text */
+.text-gradient {
+  background: linear-gradient(100deg, var(--text) 10%, var(--accent-text) 55%, var(--cool) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-hot { background: linear-gradient(100deg, var(--hot), var(--hot-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+/* Hot heat-grid cells breathe */
+@keyframes cell-breathe { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+.cell-hot { animation: cell-breathe 3.2s ease-in-out infinite; }
+
+/* Micro-interactions */
+.lift { transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; }
+.lift:hover { transform: translateY(-1px); border-color: color-mix(in oklab, var(--accent) 45%, var(--line-strong)); box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--accent) 60%, transparent); }
+tr[aria-selected="true"] { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* Content sits above the ambient layers */
+.app-layer { position: relative; z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora span, .hot-border::after, .ecg path, .cell-hot { animation: none !important; }
+  .ecg path { stroke-dashoffset: 0; }
+  .lift:hover { transform: none; }
+}
+/* A hovered/focused card rises above its neighbours so popovers (score explainer) aren't covered */
+.card:hover, .card:focus-within { z-index: 3; }

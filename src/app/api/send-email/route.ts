@@ -6,6 +6,7 @@ import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
 import { isAuthed } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
+import { assertSendAllowed, LimitError } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +24,13 @@ export async function POST(req: Request) {
     draft_id?: string | null;
   };
   if (!b.to || !b.subject?.trim() || !b.body?.trim()) return NextResponse.json({ error: "Recipient, subject and body are required." }, { status: 400 });
+
+  try {
+    await assertSendAllowed();
+  } catch (e) {
+    if (e instanceof LimitError) return NextResponse.json({ error: e.message }, { status: 429 });
+    throw e;
+  }
 
   const safe = process.env.SAFE_MODE !== "false";
   const demo = process.env.DEMO_CONTACT_EMAIL;

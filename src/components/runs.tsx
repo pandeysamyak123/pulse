@@ -1,11 +1,11 @@
 "use client";
 
-import { Activity, AlertTriangle, ChevronDown, Cpu, ShieldAlert, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
+import { Activity, AlertTriangle, ChevronDown, Cpu, Loader2, ShieldAlert, ShieldCheck, ShieldX, Swords } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { cn, fmtDateTime } from "@/lib/format";
 import type { ScanRun } from "@/lib/types";
-import { EmptyState, OwnerTag, Tip } from "./ui";
+import { Button, EmptyState, OwnerTag, Tip } from "./ui";
 
 const FUNNEL = [
   { k: "articles_fetched", label: "Fetched", color: "var(--quiet)" },
@@ -43,6 +43,8 @@ export function RunsView({ runs }: { runs: ScanRun[] }) {
           </span>
         )}
       </div>
+
+      <ProveIt />
 
       {runs.length === 0 ? (
         <EmptyState icon={<Activity className="h-6 w-6" />} title="No scans yet." />
@@ -142,5 +144,83 @@ function RunRow({ r, i }: { r: ScanRun; i: number }) {
         </div>
       )}
     </motion.li>
+  );
+}
+
+
+/* ───────── Live proof: attack the ownership rule and watch every attempt bounce ───────── */
+type Check = { label: string; result: string; detail?: string };
+function ProveIt() {
+  const [busy, setBusy] = useState(false);
+  const [res, setRes] = useState<{ checks: Check[]; allBlocked: boolean; hashBefore: string; hashAfter: string; unchanged: boolean } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const run = async () => {
+    setBusy(true);
+    setErr(null);
+    setRes(null);
+    try {
+      const r = await fetch("/api/integrity", { method: "POST" });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error ?? "failed");
+      setRes(j);
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="card relative overflow-hidden p-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent-soft text-accent-text">
+          <Swords className="h-5 w-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">Prove it, live</p>
+          <p className="text-sm text-muted">Attack Arjun&apos;s data as the pipeline would. Every attempt should be refused by the database — and roll back.</p>
+        </div>
+        <Button variant="primary" onClick={run} disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Swords className="h-4 w-4" />} Run attack
+        </Button>
+      </div>
+      {err && <p className="mt-3 text-sm text-bad">{err}</p>}
+      <AnimatePresence>
+        {res && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 space-y-1.5">
+            {res.checks.map((c, i) => (
+              <motion.div
+                key={c.label}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.12 * i }}
+                className="flex items-start gap-2.5 rounded-xl bg-surface-2 px-3 py-2 text-sm"
+              >
+                {c.result === "BLOCKED" ? <ShieldX className="mt-0.5 h-4 w-4 shrink-0 text-ok" /> : <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-bad" />}
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium">{c.label}</span>
+                  {c.detail && <span className="num block truncate text-[11px] text-faint">{c.detail}</span>}
+                </span>
+                <span className={cn("num text-xs font-semibold", c.result === "BLOCKED" ? "text-ok" : "text-bad")}>{c.result}</span>
+              </motion.div>
+            ))}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.12 * res.checks.length + 0.1 }}
+              className={cn(
+                "mt-2 flex flex-wrap items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold",
+                res.allBlocked && res.unchanged ? "bg-[color-mix(in_oklab,var(--ok)_14%,transparent)] text-ok" : "bg-[color-mix(in_oklab,var(--bad)_14%,transparent)] text-bad",
+              )}
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {res.allBlocked && res.unchanged ? `${res.checks.length}/${res.checks.length} blocked · Arjun's data hash unchanged` : "Something got through — investigate"}
+              <span className="num ml-auto text-[11px] font-normal opacity-80">
+                {res.hashBefore.slice(0, 10)}… = {res.hashAfter.slice(0, 10)}…
+              </span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
   );
 }

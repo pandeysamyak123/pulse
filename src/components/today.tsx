@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useSpring, type Variants } from "framer-motion";
 import { ArrowRight, BellRing, ExternalLink, Newspaper, Clock, Flame, Pause, Send, ShieldCheck, Sparkles, X, Zap, Hourglass, CircleCheck, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -43,7 +43,7 @@ export function TodayView({
 
   return (
     <div className="space-y-6">
-      <h1 className="sr-only">Today</h1>
+      <Hero views={views} reachOut={reachOut} kpis={kpis} />
       <KpiStrip kpis={kpis} />
 
       <section aria-labelledby="reach-out">
@@ -56,8 +56,10 @@ export function TodayView({
         {reachOut.length ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {reachOut.map((id, i) => (
-              <motion.div key={id} custom={i} variants={rise} initial="hidden" animate="show">
-                <ReachCard v={byId.get(id)!} />
+              <motion.div key={id} custom={i} variants={rise} initial="hidden" animate="show" style={{ perspective: 900 }}>
+                <Tilt>
+                  <ReachCard v={byId.get(id)!} />
+                </Tilt>
               </motion.div>
             ))}
           </div>
@@ -80,6 +82,71 @@ export function TodayView({
 
       <Drawer v={drawer} onClose={() => setDrawer(null)} />
     </div>
+  );
+}
+
+/* ───────── Hero: the 5-second answer ───────── */
+function Hero({ views, reachOut, kpis }: { views: AccountView[]; reachOut: string[]; kpis: Kpis }) {
+  const [greet, setGreet] = useState("Hello");
+  useEffect(() => {
+    const h = Number(new Date().toLocaleString("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false }));
+    setGreet(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+  }, []);
+  const first = views.find((v) => v.id === reachOut[0]);
+  return (
+    <header className="relative pt-2">
+      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="label mb-1">
+        {greet}, Arjun
+      </motion.p>
+      <motion.h1
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="text-2xl font-semibold tracking-tight sm:text-[34px] sm:leading-tight"
+      >
+        {kpis.hot > 0 ? (
+          <>
+            <span className="text-hot">{kpis.hot} hot</span> <span className="text-gradient">account{kpis.hot === 1 ? "" : "s"} today</span>
+          </>
+        ) : (
+          <span className="text-gradient">No hot accounts today</span>
+        )}
+        {first && (
+          <span className="text-gradient">
+            {" "}
+            — start with{" "}
+            <Link href={`/accounts/${first.id}?tab=outreach`} className="underline decoration-accent/50 decoration-2 underline-offset-4 hover:decoration-accent">
+              {first.company_name}
+            </Link>
+          </span>
+        )}
+      </motion.h1>
+    </header>
+  );
+}
+
+/* ───────── 3D tilt (pointer-driven, spring-smoothed, off for reduced motion) ───────── */
+function Tilt({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+  const rx = useSpring(useMotionValue(0), { stiffness: 220, damping: 20 });
+  const ry = useSpring(useMotionValue(0), { stiffness: 220, damping: 20 });
+  if (reduce) return <>{children}</>;
+  return (
+    <motion.div
+      className="h-full"
+      style={{ rotateX: rx, rotateY: ry, transformStyle: "preserve-3d" }}
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        ry.set(((e.clientX - r.left) / r.width - 0.5) * 7);
+        rx.set(-((e.clientY - r.top) / r.height - 0.5) * 7);
+      }}
+      onPointerLeave={() => {
+        rx.set(0);
+        ry.set(0);
+      }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
@@ -152,10 +219,9 @@ function ReachCard({ v }: { v: AccountView }) {
     <div
       className={cn(
         "card relative flex h-full flex-col gap-3 overflow-visible p-4 transition-colors hover:border-line-strong",
-        v.warmth_tier === "hot" && "border-[color-mix(in_oklab,var(--hot)_35%,transparent)]",
+        v.warmth_tier === "hot" && "hot-border",
       )}
     >
-      {v.warmth_tier === "hot" && <div className="hot-gradient pointer-events-none absolute inset-x-0 top-0 h-px rounded-t-2xl" />}
       <div className="flex items-start gap-3">
         <Logo name={v.company_name} domain={v.domain} size={40} />
         <div className="min-w-0 flex-1">
@@ -185,9 +251,9 @@ function ReachCard({ v }: { v: AccountView }) {
       )}
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
         <ReadinessBadge r={v.readiness} />
-        <Link href={`/accounts/${v.id}?tab=outreach`}>
-          <Button variant="primary" size="sm">
-            <Send className="h-3.5 w-3.5" /> Draft outreach
+        <Link href={`/accounts/${v.id}?tab=outreach`} className="shrink-0">
+          <Button variant="primary" size="sm" className="whitespace-nowrap">
+            <Send className="h-3.5 w-3.5" /> Draft
           </Button>
         </Link>
       </div>

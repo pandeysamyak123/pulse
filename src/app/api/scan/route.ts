@@ -8,6 +8,7 @@ import { isAuthed, isCron } from "@/lib/auth";
 import { supabaseAdmin, must } from "@/lib/supabase";
 import { finishRun, scanAccounts, startRun } from "@/lib/pipeline/scan";
 import { enrichAccount } from "@/lib/pipeline/enrich";
+import { assertScanAllowed, LimitError } from "@/lib/guards";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -22,6 +23,14 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { action?: string; runId?: string; ids?: string[] };
 
   if (body.action === "start") {
+    if (!isCron(req)) {
+      try {
+        await assertScanAllowed();
+      } catch (e) {
+        if (e instanceof LimitError) return NextResponse.json({ error: e.message }, { status: 429 });
+        throw e;
+      }
+    }
     const runId = await startRun(isCron(req) ? "cron" : "manual");
     const ids = (must(await supabaseAdmin().from("accounts").select("id").order("warmth_score", { ascending: false }), "ids") as { id: string }[]).map((r) => r.id);
     const batches: string[][] = [];

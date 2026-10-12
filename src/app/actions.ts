@@ -7,6 +7,7 @@ import { clearSession, passcodeMatches, requireAuth, setSession } from "@/lib/au
 import { supabaseAdmin } from "@/lib/supabase";
 import { newUsage } from "@/lib/gemini";
 import { regenerateDrafts, type Tone } from "@/lib/pipeline/enrich";
+import { assertRegenAllowed } from "@/lib/guards";
 
 type Result<T = undefined> = { ok: true; data?: T } | { ok: false; error: string };
 
@@ -108,6 +109,7 @@ export async function updateManualFields(accountId: string, fields: Record<strin
 // ───────── drafts (SYSTEM table; Arjun asks the generator for a new version) ─────────
 export async function regenerate(accountId: string, tone: Tone, channel?: string) {
   return guard(async () => {
+    await assertRegenAllowed(accountId);
     const usage = newUsage();
     const r = await regenerateDrafts(accountId, usage, { tone, channel });
     return { ...r, calls: usage.calls };

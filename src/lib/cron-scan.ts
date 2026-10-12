@@ -5,9 +5,11 @@ import "server-only";
 import { supabaseAdmin, must } from "./supabase";
 import { finishRun, scanAccounts, startRun } from "./pipeline/scan";
 import { enrichAccount } from "./pipeline/enrich";
+import { closeStaleRuns } from "./guards";
 
 export async function cronScan(trigger: string, budgetMs = 250_000) {
   const t0 = Date.now();
+  await closeStaleRuns();
   const runId = await startRun(trigger);
   const ids = (must(await supabaseAdmin().from("accounts").select("id").order("last_scanned_at", { ascending: true, nullsFirst: true }), "ids") as { id: string }[]).map(
     (r) => r.id,
