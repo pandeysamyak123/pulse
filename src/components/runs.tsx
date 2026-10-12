@@ -74,7 +74,7 @@ function RunRow({ r, i }: { r: ScanRun; i: number }) {
             {r.trigger} · {dur != null ? `${dur}s` : "running"} · {r.accounts_scanned} accts
           </span>
         </span>
-        <span className="flex min-w-[260px] flex-1 items-end gap-1.5" aria-label="Funnel">
+        <span className="flex min-w-[260px] flex-1 items-end gap-1.5" role="group" aria-label="Funnel">
           {FUNNEL.map((f) => {
             const v = r[f.k] as number;
             return (

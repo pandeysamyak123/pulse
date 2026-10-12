@@ -132,7 +132,7 @@ npm run dev
 
 - **Unit tests** (`npm test`, Vitest) for the deterministic core: decay maths, top-3 cap, stage multipliers, event clustering, first-report ageing, prefilter (word-boundary matching, exclude terms, dedupe, priority), draft gate (the real hallucinations we caught), readiness.
 - **CI** (`.github/workflows/ci.yml`): lint + typecheck + tests on every push.
-- **Accessibility:** Lighthouse 92+ on every page before fixes; tooltip semantics, contrast and label/name issues then fixed. Full keyboard support (⌘K, J/K, D, L, N, 1–5) and `prefers-reduced-motion` respected everywhere.
+- **Accessibility:** Lighthouse **100 accessibility · 100 best practices** on every page (Today, account workspace, Triggers, Accounts, Runs, Emails, How it works). Full keyboard support (⌘K, J/K, D, L, N, 1–5) and `prefers-reduced-motion` respected everywhere.
 - **Guards for the open app:** one scan per 10 min, 4 regenerations per account per hour, 10 sends per hour — all enforced from database state so they hold across serverless instances. Abandoned scans are closed automatically with their integrity hash recorded.
 - **Robust rendering:** entrance animations are pure CSS, so content is visible from the server HTML before JavaScript loads; skeleton loaders, error and 404 pages.
 
