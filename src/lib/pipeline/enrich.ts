@@ -11,6 +11,7 @@ import { checkDrafts, enforceLimits, triggerTerms, LIMITS, type DraftSet } from 
 import type { EnrichContext } from "./scan";
 import type { AccountRow } from "./types";
 import type { SignalRow } from "./score";
+import { readiness } from "../readiness";
 
 const DAY = 86_400_000;
 export type Tone = "crisp" | "warm" | "executive";
@@ -55,19 +56,6 @@ async function loadContext(accountId: string) {
 }
 
 const fmtDate = (s: string | null) => (s ? s.slice(0, 10) : "?");
-const daysSince = (d: string | null) => (d ? Math.floor((Date.now() - Date.parse(d)) / DAY) : null);
-
-/** Deterministic readiness, shown next to warmth (never changes the score). */
-export function readiness(a: Pick<AccountRow, "last_contact_date" | "do_not_contact_until">, activities: Activity[]) {
-  const today = new Date().toISOString().slice(0, 10);
-  if (a.do_not_contact_until && a.do_not_contact_until > today) return { state: "paused" as const, until: a.do_not_contact_until };
-  const since = daysSince(a.last_contact_date);
-  const lastOut = activities.find((x) => x.direction === "outbound");
-  const unanswered = !!lastOut && (lastOut.outcome === "no_reply" || lastOut.outcome == null) && lastOut.channel !== "meeting";
-  if (since != null && since < 7) return { state: "wait" as const, days: since, unanswered };
-  if (unanswered && lastOut && daysSince(lastOut.occurred_at)! >= 5) return { state: "follow_up" as const, days: daysSince(lastOut.occurred_at)! };
-  return { state: "ready" as const };
-}
 
 // ───────────── schemas ─────────────
 const OutreachSchema = z.object({

@@ -1,26 +1,191 @@
 @import "tailwindcss";
 
+/* ───────────── Design tokens (dark first) ───────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0b0f;
+  --surface: #12141a;
+  --surface-2: #171a22;
+  --surface-3: #1d212b;
+  --line: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.11);
+  --text: #eceef3;
+  --muted: #9097a7;
+  --faint: #6b7183;
+  --accent: #7c5cff;
+  --accent-soft: rgba(124, 92, 255, 0.14);
+  --accent-text: #b5a3ff;
+
+  --hot: #ff5a36;
+  --hot-2: #ff9a3c;
+  --hot-glow: rgba(255, 90, 54, 0.45);
+  --warm: #f5b83d;
+  --cool: #2cc8ea;
+  --quiet: #6b7891;
+
+  --ok: #34d399;
+  --bad: #f87171;
+  --overlay: rgba(10, 11, 15, 0.72);
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f6f6f9;
+  --surface: #ffffff;
+  --surface-2: #f3f3f7;
+  --surface-3: #ebebf1;
+  --line: rgba(15, 17, 23, 0.08);
+  --line-strong: rgba(15, 17, 23, 0.14);
+  --text: #0f1117;
+  --muted: #565c6b;
+  --faint: #7a8090;
+  --accent: #6a4bf0;
+  --accent-soft: rgba(106, 75, 240, 0.1);
+  --accent-text: #5b3de0;
+
+  --hot: #e2401f;
+  --hot-2: #f07d1f;
+  --hot-glow: rgba(226, 64, 31, 0.28);
+  --warm: #b7791f;
+  --cool: #0b87a6;
+  --quiet: #5f6b80;
+
+  --ok: #0f9f6e;
+  --bad: #d83a3a;
+  --overlay: rgba(246, 246, 249, 0.75);
+  --shadow: 0 1px 2px rgba(15, 17, 23, 0.04), 0 8px 24px -12px rgba(15, 17, 23, 0.12);
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-hot: var(--hot);
+  --color-warm: var(--warm);
+  --color-cool: var(--cool);
+  --color-quiet: var(--quiet);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  /* Hidden tooltips are absolutely positioned; never let them widen the page. clip ≠ hidden: sticky still works. */
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.glass {
+  background: color-mix(in oklab, var(--surface) 78%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--line-strong);
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Tier text/background helpers */
+.tier-hot { color: var(--hot); }
+.tier-warm { color: var(--warm); }
+.tier-cool { color: var(--cool); }
+.tier-quiet { color: var(--quiet); }
+
+.hot-gradient {
+  background: linear-gradient(135deg, var(--hot), var(--hot-2));
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--hot-glow)); }
+  50% { filter: drop-shadow(0 0 14px var(--hot-glow)); }
+}
+.pulse-hot { animation: pulse-glow 2.6s ease-in-out infinite; }
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: 0.5rem;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes flow {
+  to { background-position: 200% 0; }
+}
+.flow-bar {
+  background: linear-gradient(90deg, var(--accent), var(--cool), var(--accent));
+  background-size: 200% 100%;
+  animation: flow 1.6s linear infinite;
+}
+
+::selection { background: var(--accent-soft); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-hot, .skeleton::after, .flow-bar { animation: none !important; }
+}
+
+/* Thin scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+
+/* Mermaid uses a .label class too — keep our eyebrow style out of diagrams */
+.mmd .label,
+svg .label {
+  font-size: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: inherit;
+  font-weight: inherit;
 }

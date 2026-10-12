@@ -1,0 +1,75 @@
+// Single source of truth for the Components Map (used by /how-it-works and COMPONENTS_MAP.md).
+export const COMPONENTS_MAP = `flowchart TB
+  classDef ai fill:#2a1f5c,stroke:#7c5cff,color:#e9e4ff
+  classDef det fill:#12303a,stroke:#2cc8ea,color:#dff7fd
+  classDef sys fill:#1d212b,stroke:#9097a7,color:#eceef3
+  classDef arjun fill:#3a2a12,stroke:#f5b83d,color:#fff3d6
+  classDef ext fill:#17191f,stroke:#6b7183,color:#c9ccd6,stroke-dasharray:4 3
+
+  subgraph TRIG["① Trigger"]
+    direction LR
+    CRON["⏰ Vercel Cron<br/>scan 06:00 IST daily<br/>Hot List Mon & Thu 08:00 IST"]:::det
+    UI_SCAN["▶ Run scan now<br/>(passcode)"]:::det
+  end
+
+  API["/api/scan — start → batches of 3 accounts → finish"]:::det
+
+  subgraph SRC["② Live sources — no logins, no scraping"]
+    direction LR
+    GN["Google News RSS<br/>5 queries per account"]:::ext
+    GD["GDELT DOC 2.0<br/>1 pooled query per scan"]:::ext
+  end
+
+  subgraph PIPE["③ Pipeline"]
+    direction TB
+    PRE["Prefilter · deterministic<br/>dedupe · company mention · exclude terms · already stored · cap 12"]:::det
+    CLS["🤖 Gemini Flash · classify<br/>1 call / account → trigger? type · verbatim evidence · event_key"]:::ai
+    SCORE["Cluster + Score · deterministic<br/>base × confidence × 0.5^(age ÷ half-life) × stage → top-3, cap 100"]:::det
+    GEN["🤖 Gemini Flash · brief · angle · drafts · note digest<br/>+ draft checks: limits · banned phrases · trigger named · no unsupported figures"]:::ai
+    PRE --> CLS --> SCORE --> GEN
+  end
+
+  subgraph DB["④ Supabase Postgres — ownership enforced in the database"]
+    direction LR
+    subgraph SYSSIDE["🤖 SYSTEM-owned"]
+      direction TB
+      SYSRPC["apply_signal_update()<br/>writes SYSTEM columns only"]:::sys
+      SYST[("articles · signals · outreach_drafts<br/>note_digests · score_history · scan_runs")]:::sys
+    end
+    GUARD{{"Guard triggers<br/>any non-Arjun write to Arjun data → ERROR"}}:::sys
+    subgraph ARJSIDE["✍️ ARJUN-owned"]
+      direction TB
+      ARPC["Arjun RPCs<br/>update_manual_fields · log_activity<br/>add_note · upsert_contact"]:::arjun
+      ARJ[("account manual fields · contacts<br/>activities · notes")]:::arjun
+    end
+    HASH["arjun_data_hash() — identical before & after every run"]:::sys
+  end
+
+  subgraph OUT["⑤ Arjun's surfaces"]
+    direction LR
+    DASH["Pulse dashboard<br/>Today · Workspace · Triggers · Runs"]:::det
+    RESEND["Resend<br/>Hot List · outreach email (one click)"]:::ext
+    LI["LinkedIn hand-off<br/>copy + open profile · mark as sent"]:::ext
+  end
+  ARJUN(("👤 Arjun")):::arjun
+
+  CRON --> API
+  UI_SCAN --> API
+  API --> SRC
+  SRC --> PRE
+  CLS -- "articles, signals" --> SYST
+  SCORE --> SYSRPC
+  GEN --> SYSRPC
+  GEN -- "drafts, digests" --> SYST
+  ARJ -. "read-only context" .-> GEN
+  SYSRPC --> GUARD
+  GUARD -. "blocks" .- ARJ
+  HASH -. "proves" .- ARJ
+  SYST --> DASH
+  ARJ --> DASH
+  DASH --> ARJUN
+  ARJUN -- "edits · notes · logs" --> ARPC --> ARJ
+  ARJUN -- "Send" --> RESEND
+  ARJUN --> LI
+  CRON -. "Mon/Thu" .-> RESEND
+`;
